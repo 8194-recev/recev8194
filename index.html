@@ -321,7 +321,8 @@ table.tbl{width:100%;border-collapse:collapse}
    כל עוד firebase = null המערכת רצה במצב הדגמה מקומי.
    אחרי פתיחת פרויקט Firebase מדביקים כאן את אובייקט ההגדרות. */
 window.GDUD_CONFIG = {
-  firebase: null,
+  firebase: {"apiKey": "AIzaSyAk32sGYi9gwzgZK9Lh0JVnJaEGMy4SRaw", "authDomain": "recev-8194.firebaseapp.com", "projectId": "recev-8194", "storageBucket": "recev-8194.firebasestorage.app", "messagingSenderId": "519610608358", "appId": "1:519610608358:web:ad91f2d656ba27e2556927"},
+  owner: "liron.t0910@gmail.com",
   demo: false
 };
 </script>
@@ -395,6 +396,7 @@ const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hid
 const COLS = ['units', 'types', 'drivers', 'vehicles', 'faults', 'maint', 'users', 'audit'];
 const DEFAULT_SETTINGS = { battalion: 'גדוד', warnDays: 30, refresherMonths: 12, serviceWarnDays: 14, serviceWarnKm: 500, trackMedical: false };
 const GRADES = ['B', 'C1', 'C', 'C+E'];
+const DEFAULT_TYPES = () => ['האמר', 'אושקוש', 'מתן', 'טטרה', 'אמבולנס', 'דודג׳'].map((name, i) => ({ id: 't' + (i + 1), name, grade: '', serviceDays: 180, serviceKm: 5000 }));
 const RANKS = ['טוראי', 'רב״ט', 'סמ״ר', 'סמל', 'רס״ל', 'רס״ר', 'רס״מ', 'סג״ם', 'סגן', 'סרן', 'אזרח עובד צה״ל'];
 const SERVICE = ['סדיר', 'קבע', 'מילואים'];
 const AVAIL = ['ביחידה', 'בבית', 'בקורס', 'בחופשה'];
@@ -592,7 +594,7 @@ const LocalBackend = {
       for (const c of COLS) S.data[c] = saved.data[c] || [];
       S.settings = { ...DEFAULT_SETTINGS, ...(saved.settings || {}) };
     } else {
-      S.data.types = ['האמר', 'אושקוש', 'מתן', 'טטרה', 'אמבולנס', 'דודג׳'].map((name, i) => ({ id: 't' + (i + 1), name, grade: '', serviceDays: 180, serviceKm: 5000 }));
+      S.data.types = DEFAULT_TYPES();
     }
     S.user = { name: 'קצין רכב', role: 'admin', unitId: '', email: '' };
   },
@@ -627,6 +629,16 @@ const FireBackend = {
         let doc;
         try { doc = await this.db.collection('users').doc(email).get(); }
         catch (e) { App.showLogin('לא ניתן לבדוק הרשאות: ' + e.message); return; }
+        const owner = String(CONFIG.owner || '').toLowerCase();
+        if (!doc.exists && owner && email === owner) {
+          /* first sign-in of the system owner: create the admin user + default vehicle types */
+          try {
+            await this.db.collection('users').doc(email).set({ name: u.displayName || 'קצין רכב', role: 'admin', unitId: '' });
+            const ts = await this.db.collection('types').limit(1).get();
+            if (ts.empty) { const b = this.db.batch(); DEFAULT_TYPES().forEach(t => { const { id, ...rest } = t; b.set(this.db.collection('types').doc(id), rest); }); await b.commit(); }
+            doc = await this.db.collection('users').doc(email).get();
+          } catch (e) { App.showLogin('יצירת משתמש המנהל נכשלה: ' + e.message + ' – בדוק שחוקי האבטחה הודבקו ב-Firestore.'); return; }
+        }
         if (!doc.exists) { App.showLogin(`לחשבון ${email} אין הרשאה למערכת. פנה לקצין הרכב כדי שיוסיף אותך.`, true); return; }
         const p = doc.data();
         S.user = { name: p.name || u.displayName || email, email, role: p.role || 'hq', unitId: p.unitId || '' };
@@ -655,7 +667,15 @@ const FireBackend = {
   put(c, o) { const { id, ...rest } = o; return this.db.collection(c).doc(id).set(rest, { merge: true }); },
   remove(c, id) { return this.db.collection(c).doc(id).delete(); },
   putSettings(s) { return this.db.collection('meta').doc('settings').set(s); },
-  signIn() { return firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); },
+  signIn() {
+    const p = new firebase.auth.GoogleAuthProvider();
+    p.setCustomParameters({ prompt: 'select_account' });
+    return firebase.auth().signInWithPopup(p).catch(e => {
+      if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(e.code)) return firebase.auth().signInWithRedirect(p);
+      if (['auth/popup-closed-by-user', 'auth/cancelled-popup-request'].includes(e.code)) return;
+      throw e;
+    });
+  },
   signOut() { return firebase.auth().signOut().then(() => location.reload()); },
 };
 
@@ -959,7 +979,8 @@ VIEWS.dashboard = {
       <section class="card" style="margin-bottom:16px"><div class="body" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:18px">
         <div class="logo" style="width:44px;height:44px">${ic('upload')}</div>
         <div style="flex:1;min-width:220px"><b style="font-size:16px">מתחילים: טוענים את הנהגים</b><div class="t-muted">ייבא את קובץ האקסל הקיים (גם בפורמט "צריך רענון על / עבר רענון על"), או הורד תבנית ומלא אותה.</div></div>
-        <button class="btn primary" data-act="import">${ic('upload')}יבוא מאקסל</button><button class="btn" data-act="template">${ic('sheet')}תבנית</button>
+        ${S.mode === 'cloud' && IO.localSaved() ? `<button class="btn primary" data-act="migrate">${ic('upload')}העלאת ${IO.localSaved().data.drivers.length} הנהגים מהמכשיר</button>` : ''}
+        <button class="btn ${S.mode === 'cloud' && IO.localSaved() ? '' : 'primary'}" data-act="import">${ic('upload')}יבוא מאקסל</button><button class="btn" data-act="template">${ic('sheet')}תבנית</button>
         <button class="btn ghost" data-act="nav" data-route="settings">${ic('settings')}פלוגות וסוגי רכב</button>
       </div></section>` : '';
     return `
@@ -1235,6 +1256,7 @@ VIEWS.settings = {
           <button class="btn" data-act="export">${ic('download')}יצוא לאקסל</button>
           <button class="btn" data-act="backup">${ic('database')}גיבוי מלא</button>
           <button class="btn" data-act="restore">${ic('history')}שחזור מגיבוי</button>
+          ${S.mode === 'cloud' && IO.localSaved() ? `<button class="btn" data-act="migrate">${ic('upload')}העלאת נתוני המכשיר לענן</button>` : ''}
         </div></section>
 
         <section class="card"><header><h2>יומן שינויים</h2></header><div class="body"><div class="tl">
@@ -1423,6 +1445,7 @@ const ACT = {
   export: () => IO.exportAll(),
   backup: () => IO.backup(),
   restore: () => IO.restore(),
+  migrate: () => IO.migrateLocal(),
 };
 
 function bindGlobalEvents() {
@@ -1957,6 +1980,19 @@ const IO = {
     toast(`יובאו ${p.drivers.length} נהגים ו-${p.vehicles.length} רכבים`);
   },
 
+  localSaved() {
+    try { const j = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); return j && j.data && (j.data.drivers || []).length ? j : null; } catch (e) { return null; }
+  },
+  migrateLocal() {
+    const j = this.localSaved(); if (!j) return toast('לא נמצאו נתונים שמורים במכשיר הזה', 'bad');
+    const n = j.data.drivers.length, m = (j.data.vehicles || []).length;
+    confirmBox('העלאת נתוני המכשיר לענן', `להעלות לענן ${n} נהגים ו-${m} רכבים שנשמרו בטלפון/מחשב הזה? רשומות עם אותו מזהה יעודכנו.`, () => {
+      for (const c of ['units', 'types', 'drivers', 'vehicles', 'faults', 'maint']) for (const o of (j.data[c] || [])) Store.put(c, o);
+      if (j.settings) Store.saveSettings(j.settings);
+      Store.log(`הועלו לענן נתוני המכשיר: ${n} נהגים, ${m} רכבים`);
+      toast('הנתונים הועלו לענן');
+    }, 'העלאה', false);
+  },
   backup() {
     const data = { app: 'gdud-fleet', version: 1, at: new Date().toISOString(), settings: S.settings, data: Object.fromEntries(COLS.filter(c => c !== 'audit').map(c => [c, S.data[c]])) };
     download(`fleet_backup_${todayISO()}.json`, new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
