@@ -1,0 +1,2000 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4a5d2c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="נהגים ורכבים">
+<title>ניהול נהגים ורכבים</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f4f0; --surface:#ffffff; --surface-2:#f8f9f5; --border:#e3e5dd; --border-strong:#cfd3c6;
+  --text:#1c2016; --muted:#686d61; --faint:#9a9e93;
+  --accent:#4a5d2c; --accent-hover:#3d4d24; --accent-soft:#eef1e5; --accent-ink:#ffffff;
+  --ok:#2b7a46; --ok-bg:#e5f3e9; --warn:#a96300; --warn-bg:#fcf0da; --bad:#bf3a2e; --bad-bg:#fbe8e5;
+  --info:#2c61ac; --info-bg:#e6eefa; --neutral-bg:#eef0ea;
+  --shadow-sm:0 1px 2px rgba(20,24,15,.06); --shadow:0 4px 18px rgba(20,24,15,.08); --shadow-lg:0 18px 50px rgba(20,24,15,.18);
+  --r:12px; --r-sm:8px; --side:248px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#111310; --surface:#1a1d17; --surface-2:#20241c; --border:#2c3127; --border-strong:#3a4034;
+  --text:#e9ebe4; --muted:#a2a79a; --faint:#71766b;
+  --accent:#8fa65e; --accent-hover:#a2b971; --accent-soft:#252c1b; --accent-ink:#11140c;
+  --ok:#5cc07c; --ok-bg:#16301f; --warn:#e3a13b; --warn-bg:#33270f; --bad:#ec6b5f; --bad-bg:#3a1a17;
+  --info:#6f9fe6; --info-bg:#172540; --neutral-bg:#252922;
+  --shadow-sm:none; --shadow:0 4px 18px rgba(0,0,0,.35); --shadow-lg:0 18px 50px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ic.sm{width:15px;height:15px}.ic.lg{width:22px;height:22px}
+.num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:var(--surface);border-inline-end:1px solid var(--border);display:flex;flex-direction:column;padding:18px 14px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 20px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.logo .ic{width:21px;height:21px}
+.brand b{display:block;font-size:15.5px;font-weight:700;line-height:1.2}
+.brand small{color:var(--muted);font-size:12px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;padding:10px 12px;border-radius:9px;cursor:pointer;color:var(--muted);font-weight:500;text-align:start}
+.nav button:hover{background:var(--surface-2);color:var(--text)}
+.nav button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav .cnt{margin-inline-start:auto;background:var(--bad);color:#fff;font-size:11px;font-weight:700;border-radius:20px;padding:0 7px;line-height:18px}
+.side-foot{margin-top:auto;border-top:1px solid var(--border);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.me{display:flex;align-items:center;gap:10px;padding:0 6px}
+.me .av{width:34px;height:34px;font-size:13px}
+.me b{display:block;font-size:13.5px;line-height:1.25}
+.me small{color:var(--muted);font-size:12px}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:12px 28px}
+.top .mbrand{display:none}
+.search{position:relative;flex:1;max-width:460px}
+.search input{width:100%;height:40px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:0 40px 0 12px}
+.search input:focus{outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
+.search>.ic{position:absolute;inset-inline-start:12px;top:11px;color:var(--faint)}
+.sres{position:absolute;top:46px;inset-inline:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-lg);max-height:380px;overflow:auto;padding:6px;z-index:30}
+.sres button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:9px 10px;border-radius:8px;cursor:pointer;text-align:start}
+.sres button:hover{background:var(--surface-2)}
+.sres .empty{padding:14px;color:var(--muted);text-align:center}
+.top-actions{display:flex;align-items:center;gap:8px;margin-inline-start:auto}
+.rolepick{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 4px 0 10px;height:40px;color:var(--muted);font-size:13px}
+.rolepick select{border:0;background:none;height:38px;color:var(--text);font-weight:500;cursor:pointer}
+.view{padding:26px 28px 60px;max-width:1440px;width:100%;margin:0 auto}
+.demo{display:flex;align-items:center;gap:10px;background:var(--info-bg);color:var(--info);border-radius:var(--r);padding:10px 14px;margin-bottom:20px;font-size:13.5px}
+.demo b{font-weight:600}
+.demo .btn{margin-inline-start:auto}
+
+/* ---------- page ---------- */
+.phead{display:flex;align-items:flex-end;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.phead h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em}
+.phead .sub{margin:2px 0 0;color:var(--muted)}
+.phead .acts{margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+.card>header{display:flex;align-items:center;gap:10px;padding:16px 18px 0}
+.card>header h2{margin:0;font-size:15.5px;font-weight:600}
+.card>header .more{margin-inline-start:auto;font-size:13px}
+.card .body{padding:14px 18px 18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.grid2.wide{grid-template-columns:1.6fr 1fr}
+.grid2>*,.set-grid>*,.kpis>*{min-width:0}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{padding:16px 18px;cursor:pointer;transition:border-color .15s}
+.kpi:hover{border-color:var(--border-strong)}
+.kpi .lbl{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:500}
+.kpi .lbl .ic{color:var(--faint)}
+.kpi .val{font-size:30px;font-weight:700;line-height:1.1;margin-top:10px;letter-spacing:-.02em}
+.kpi .val small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
+.kpi .foot{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.bar{height:6px;background:var(--neutral-bg);border-radius:6px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;border-radius:6px}
+.t-ok{color:var(--ok)}.t-warn{color:var(--warn)}.t-bad{color:var(--bad)}.t-info{color:var(--info)}.t-muted{color:var(--muted)}
+.b-ok{background:var(--ok)}.b-warn{background:var(--warn)}.b-bad{background:var(--bad)}
+
+/* badges & chips */
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;border-radius:20px;padding:2px 10px 2px 10px;white-space:nowrap;line-height:20px}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}.badge.warn{background:var(--warn-bg);color:var(--warn)}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}.badge.info{background:var(--info-bg);color:var(--info)}
+.badge.muted{background:var(--neutral-bg);color:var(--muted)}
+.badge.plain::before{display:none}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:6px;padding:0 7px;line-height:20px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}.pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.muted{background:var(--neutral-bg);color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--neutral-bg);color:var(--text);border-radius:6px;padding:0 8px;font-size:12.5px;line-height:22px;white-space:nowrap}
+.chip.off{opacity:.55;text-decoration:line-through}
+
+/* buttons & forms */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--surface-2);border-color:var(--border-strong)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.danger{color:var(--bad)}
+.btn.danger.solid{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.ghost{border-color:transparent;background:none}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{height:32px;padding:0 10px;font-size:13px;border-radius:8px}
+.btn.icon{width:38px;padding:0}.btn.icon.sm{width:32px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.input,.select{height:38px;border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:0 11px;min-width:0}
+.input:focus,.select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
+.tb-search{position:relative;flex:1;min-width:200px;max-width:340px}
+.tb-search .input{width:100%;padding-inline-start:36px}
+.tb-search .ic{position:absolute;inset-inline-start:11px;top:10px;color:var(--faint)}
+.seg{display:inline-flex;background:var(--neutral-bg);border-radius:10px;padding:3px;gap:2px}
+.seg{max-width:100%;overflow-x:auto;scrollbar-width:none}
+.seg button{white-space:nowrap;flex:none;border:0;background:none;border-radius:7px;padding:0 12px;height:32px;cursor:pointer;color:var(--muted);font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm);font-weight:600}
+.seg .n{font-size:11.5px;color:var(--faint);font-weight:600}
+
+/* table */
+.tbl-wrap{overflow:auto}
+table.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:12.5px;font-weight:600;color:var(--muted);text-align:start;padding:11px 14px;border-bottom:1px solid var(--border);background:var(--surface-2);white-space:nowrap}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr{cursor:pointer;transition:background .1s}
+.tbl tbody tr:hover{background:var(--surface-2)}
+.tbl th:first-child{border-start-start-radius:var(--r)}.tbl th:last-child{border-start-end-radius:var(--r)}
+.who{display:flex;align-items:center;gap:11px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13.5px;flex:none}
+.who b{display:block;font-weight:600;line-height:1.25}
+.who small{color:var(--muted);font-size:12.5px}
+.vid{font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.cards{display:none}
+.empty-state{padding:44px 20px;text-align:center;color:var(--muted)}
+.empty-state .ic{width:34px;height:34px;color:var(--faint);margin-bottom:8px}
+.empty-state b{display:block;color:var(--text);font-size:15px;margin-bottom:4px}
+
+/* matrix */
+.matrix{width:100%;border-collapse:separate;border-spacing:4px}
+.matrix th{font-size:12.5px;color:var(--muted);font-weight:600;padding:4px 6px;text-align:center;white-space:nowrap}
+.matrix th.u{text-align:start;color:var(--text)}
+.matrix td{text-align:center;border-radius:8px;padding:8px 4px;font-size:13px;min-width:74px}
+.matrix td b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+.matrix td .of{font-size:11.5px;font-weight:500;color:var(--muted)}
+.matrix td small{color:var(--muted);font-size:11.5px}
+.matrix td.c-ok{background:var(--ok-bg)}.matrix td.c-ok b{color:var(--ok)}
+.matrix td.c-warn{background:var(--warn-bg)}.matrix td.c-warn b{color:var(--warn)}
+.matrix td.c-bad{background:var(--bad-bg)}.matrix td.c-bad b{color:var(--bad)}
+.matrix td.c-none{background:none;color:var(--faint)}
+
+/* list rows (dashboard) */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row b{font-weight:600}
+.row small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(15,18,12,.38);z-index:60;animation:fade .15s}
+.drawer{position:fixed;top:0;bottom:0;inset-inline-end:0;width:min(580px,100%);background:var(--bg);z-index:61;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;animation:slide .2s ease-out}
+@keyframes fade{from{opacity:0}}
+@keyframes slide{from{transform:translateX(-30px);opacity:0}}
+.dh{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 20px}
+.dh .tt{display:flex;align-items:flex-start;gap:13px}
+.dh .av{width:48px;height:48px;font-size:17px}
+.dh h2{margin:0;font-size:19px;font-weight:700;line-height:1.25}
+.dh .meta{color:var(--muted);font-size:13px;margin-top:2px}
+.dh .x{margin-inline-start:auto}
+.dh .acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.db{flex:1;overflow:auto;padding:16px 20px 30px;display:flex;flex-direction:column;gap:14px}
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.sec h3{margin:0 0 10px;font-size:13.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px}
+.sec h3 .btn{margin-inline-start:auto}
+.reasons{border-radius:var(--r);padding:12px 14px;display:flex;gap:10px;font-size:13.5px}
+.reasons.bad{background:var(--bad-bg);color:var(--bad)}.reasons.warn{background:var(--warn-bg);color:var(--warn)}.reasons.info{background:var(--info-bg);color:var(--info)}
+.reasons ul{margin:0;padding:0;list-style:none}
+.reasons li{font-weight:500}
+.kv .r{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--border)}
+.kv .r:last-child{border-bottom:0}
+.kv .k{color:var(--muted);flex:1}
+.kv .p{min-width:118px;display:flex;justify-content:flex-end}
+.kv2{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px}
+.kv2 .k{color:var(--muted);font-size:12.5px}
+.kv2 .v{font-weight:500}
+.tl{display:flex;flex-direction:column;gap:0}
+.tl .it{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.tl .it:last-child{border-bottom:0}
+.tl .d{color:var(--muted);white-space:nowrap;min-width:64px}
+.foot-note{color:var(--faint);font-size:12px;text-align:center}
+
+/* modal */
+.modal-wrap{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:16px;background:rgba(15,18,12,.45);animation:fade .15s}
+.modal{background:var(--surface);border-radius:16px;box-shadow:var(--shadow-lg);width:min(640px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column}
+.modal.sm{width:min(440px,100%)}.modal.lg{width:min(820px,100%)}
+.mh{display:flex;align-items:center;padding:18px 22px 6px}
+.mh h2{margin:0;font-size:18px;font-weight:700}
+.mh .btn{margin-inline-start:auto}
+.mb{padding:12px 22px;overflow:auto}
+.mf{display:flex;gap:8px;justify-content:flex-end;padding:14px 22px 18px;border-top:1px solid var(--border)}
+.mf .start{margin-inline-end:auto}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.form .full{grid-column:1/-1}
+.form h4{grid-column:1/-1;margin:8px 0 -4px;font-size:13px;color:var(--muted);font-weight:600;border-top:1px solid var(--border);padding-top:14px}
+.form h4:first-child{border-top:0;padding-top:0;margin-top:0}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld label{font-size:13px;font-weight:500}
+.fld label i{color:var(--bad);font-style:normal}
+.fld .input,.fld .select,.fld textarea{width:100%}
+.fld textarea{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:9px 11px;min-height:72px;resize:vertical}
+.fld .hint{font-size:12px;color:var(--muted)}
+.fld.err .input{border-color:var(--bad)}
+.fld .msg{font-size:12px;color:var(--bad)}
+.perm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.perm{display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:9px;padding:6px 10px}
+.perm input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent)}
+.perm span{flex:1;font-weight:500}
+.perm .input{height:32px;width:140px;font-size:13px}
+.perm.off .input{visibility:hidden}
+
+/* settings */
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.list-ed{display:flex;flex-direction:column}
+.list-ed .li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.list-ed .li:last-child{border-bottom:0}
+.list-ed .li .grow{flex:1}
+.list-ed .li small{color:var(--muted)}
+
+/* toast */
+.toasts{position:fixed;bottom:22px;inset-inline-start:50%;transform:translateX(50%);z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{background:#1d2117;color:#fff;border-radius:10px;padding:10px 16px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px;font-size:13.5px;animation:fade .2s}
+.toast.bad{background:var(--bad)}.toast.ok .ic{color:#8fd6a5}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login .card{width:min(400px,100%);padding:34px 30px;text-align:center}
+.login .logo{width:56px;height:56px;margin:0 auto 16px;border-radius:14px}
+.login .logo .ic{width:30px;height:30px}
+.login h1{margin:0;font-size:21px}
+.login p{color:var(--muted);margin:6px 0 24px}
+.login .btn{width:100%;height:44px}
+
+/* bottom nav (mobile) */
+.bnav{display:none}
+
+@media (max-width:1100px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid2.wide,.set-grid{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .top{padding:10px 14px;gap:8px;flex-wrap:wrap}
+  .top .mbrand{display:flex;align-items:center;gap:9px;font-weight:700}
+  .top .mbrand .logo{width:32px;height:32px;border-radius:9px}
+  .top .mbrand .logo .ic{width:18px;height:18px}
+  .search{order:5;flex-basis:100%;max-width:none}
+  .rolepick span{display:none}
+  .view{padding:16px 14px 96px}
+  .phead h1{font-size:21px}
+  .phead .acts{margin-inline-start:0;width:100%}
+  .phead .acts .btn{height:36px;padding:0 12px;font-size:13.5px}
+  .kpis{gap:10px}
+  .kpi{padding:13px 14px}
+  .kpi .val{font-size:25px}
+  .tbl-wrap.resp{display:none}
+  .cards{display:flex;flex-direction:column;gap:10px}
+  .mcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;display:flex;flex-direction:column;gap:9px;cursor:pointer}
+  .mcard .r1{display:flex;align-items:center;gap:10px}
+  .mcard .r1 .badge{margin-inline-start:auto}
+  .mcard .r2{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}
+  .card.list{background:none;border:0;box-shadow:none}
+  .tb-search{max-width:none;flex-basis:100%}
+  .form,.kv2{grid-template-columns:1fr}
+  .perm-grid{grid-template-columns:1fr}
+  .modal-wrap{align-items:end;padding:0}
+  .modal,.modal.sm,.modal.lg{width:100%;border-radius:18px 18px 0 0;max-height:92vh}
+  .bnav{display:flex;position:fixed;bottom:0;inset-inline:0;z-index:40;background:var(--surface);border-top:1px solid var(--border);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  .bnav button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:5px 0;border-radius:9px;cursor:pointer;position:relative}
+  .bnav button.on{color:var(--accent);font-weight:600}
+  .bnav button .ic{width:22px;height:22px}
+  .bnav .cnt{position:absolute;top:0;inset-inline-start:calc(50% + 4px);background:var(--bad);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:0 5px;line-height:16px}
+  .matrix td{min-width:58px;padding:6px 2px}
+  .toasts{bottom:84px}
+}
+@media print{.side,.top,.bnav,.demo{display:none!important}.app{display:block}}
+
+</style>
+<script>
+/* ===== הגדרות חיבור לענן =====
+   כל עוד firebase = null המערכת רצה במצב הדגמה מקומי.
+   אחרי פתיחת פרויקט Firebase מדביקים כאן את אובייקט ההגדרות. */
+window.GDUD_CONFIG = {
+  firebase: null,
+  demo: false
+};
+</script>
+</head>
+<body>
+<div id="app"><div class="login"><div style="color:#888">טוען…</div></div></div>
+<div id="drawer"></div>
+<div id="modal"></div>
+<div class="toasts" id="toasts"></div>
+<script>
+'use strict';
+/* =========================================================
+   מערכת ניהול נהגים ורכבים – גדוד
+   core: utilities, icons, state, data store, readiness logic
+   ========================================================= */
+const CONFIG = window.GDUD_CONFIG || { firebase: null };
+
+/* ---------- utils ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const z2 = n => String(n).padStart(2, '0');
+const iso = d => d.getFullYear() + '-' + z2(d.getMonth() + 1) + '-' + z2(d.getDate());
+const todayISO = () => iso(new Date());
+const parseISO = s => { if (!s) return null; const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseISO(s); d.setDate(d.getDate() + Number(n)); return iso(d); };
+const addMonths = (s, n) => { const d = parseISO(s); d.setMonth(d.getMonth() + Number(n)); return iso(d); };
+const daysUntil = s => s ? Math.round((parseISO(s) - parseISO(todayISO())) / 864e5) : null;
+const fmtDate = s => { if (!s) return '—'; const [y, m, d] = String(s).split('-'); return `${d}/${m}/${y.slice(2)}`; };
+const fmtDateTime = s => { if (!s) return ''; const d = new Date(s); return `${z2(d.getDate())}/${z2(d.getMonth() + 1)}/${String(d.getFullYear()).slice(2)} ${z2(d.getHours())}:${z2(d.getMinutes())}`; };
+const fmtNum = n => (n == null || n === '') ? '—' : Number(n).toLocaleString('he-IL');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const initials = name => String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('');
+const byName = (a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'he');
+const safeId = s => String(s).trim().replace(/[\/\s#?\[\]]+/g, '-');
+const LONG_DATE = () => new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+/* ---------- icons ---------- */
+const I = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  search: '<circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/>',
+  plus: '<path d="M5 12h14M12 5v14"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  clock: '<circle cx="12" cy="12" r="9.5"/><path d="M12 7v5l3 2"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  edit: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  sheet: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h8M8 17h8M10 9H8"/>',
+  gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  ban: '<circle cx="12" cy="12" r="9.5"/><path d="m5.3 5.3 13.4 13.4"/>',
+  history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+  database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+  info: '<circle cx="12" cy="12" r="9.5"/><path d="M12 16v-4M12 8h.01"/>',
+  google: '<path d="M21.8 10H12v4h5.6c-.8 2.4-3 4-5.6 4a6 6 0 1 1 3.9-10.6l2.9-2.8A10 10 0 1 0 22 12c0-.7-.1-1.3-.2-2z"/>',
+};
+const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${I[n] || ''}</svg>`;
+
+/* ---------- constants ---------- */
+const COLS = ['units', 'types', 'drivers', 'vehicles', 'faults', 'maint', 'users', 'audit'];
+const DEFAULT_SETTINGS = { battalion: 'גדוד', warnDays: 30, refresherMonths: 12, serviceWarnDays: 14, serviceWarnKm: 500, trackMedical: false };
+const GRADES = ['B', 'C1', 'C', 'C+E'];
+const RANKS = ['טוראי', 'רב״ט', 'סמ״ר', 'סמל', 'רס״ל', 'רס״ר', 'רס״מ', 'סג״ם', 'סגן', 'סרן', 'אזרח עובד צה״ל'];
+const SERVICE = ['סדיר', 'קבע', 'מילואים'];
+const AVAIL = ['ביחידה', 'בבית', 'בקורס', 'בחופשה'];
+const ROLE_LABEL = { admin: 'קצין רכב', company: 'מפקד פלוגה', hq: 'מפקדת גדוד' };
+const LV_LABEL = { ok: 'כשיר', warn: 'עומד לפקוע', bad: 'לא כשיר' };
+const LV_ORDER = { bad: 0, info: 1, warn: 2, ok: 3 };
+
+/* ---------- state ---------- */
+const S = {
+  data: Object.fromEntries(COLS.map(c => [c, []])),
+  settings: { ...DEFAULT_SETTINGS },
+  user: null,
+  mode: CONFIG.firebase ? 'cloud' : CONFIG.demo ? 'demo' : 'local',
+  route: 'dashboard',
+  drawer: null,
+  f: {
+    drivers: { q: '', unit: '', status: '' },
+    vehicles: { q: '', unit: '', type: '', status: '' },
+    faults: { status: 'open', unit: '' },
+  },
+};
+
+/* ---------- permissions ---------- */
+function can(act, obj) {
+  const r = S.user?.role;
+  if (r === 'admin') return true;
+  if (r === 'company') {
+    const own = !obj || obj.unitId === S.user.unitId;
+    return ['driver.basic', 'fault.open', 'vehicle.km'].includes(act) && own;
+  }
+  return false;
+}
+const isAdmin = () => S.user?.role === 'admin';
+const scoped = arr => S.user?.role === 'company' ? arr.filter(x => x.unitId === S.user.unitId) : arr;
+
+/* ---------- lookups ---------- */
+const unitName = id => id ? (S.data.units.find(u => u.id === id)?.name || 'ללא שיוך') : 'ללא שיוך';
+const typeOf = v => S.data.types.find(t => t.id === v?.typeId);
+const typeName = id => S.data.types.find(t => t.id === id)?.name || '—';
+const unitsSorted = () => [...S.data.units].sort((a, b) => (a.order ?? 99) - (b.order ?? 99) || byName(a, b));
+const typesSorted = () => [...S.data.types].sort(byName);
+
+/* ---------- readiness: drivers ----------
+   permits = { typeId: 'YYYY-MM-DD' (last refresher on that type) | '' (authorized, refresher not done) } */
+const hasPermit = (d, id) => !!d.permits && Object.prototype.hasOwnProperty.call(d.permits, id);
+const permitRefDate = (d, id) => (d.permits?.[id]) || d.refresherDate || '';
+const permitExp = (d, id) => { const r = permitRefDate(d, id); return r ? addMonths(r, S.settings.refresherMonths) : ''; };
+const gradeOk = (d, t) => !t?.grade || !d.civilGrade || GRADES.indexOf(d.civilGrade) >= GRADES.indexOf(t.grade);
+function permitValid(d, id) {
+  const t = S.data.types.find(x => x.id === id);
+  const n = daysUntil(permitExp(d, id));
+  return hasPermit(d, id) && n != null && n >= 0 && gradeOk(d, t);
+}
+function driverItems(d) {
+  const out = [{ key: 'civilExp', label: 'רישיון אזרחי', date: d.civilExp }];
+  if (d.milExp || d.hasMil !== true) out.push({ key: 'milExp', label: 'רישיון צבאי', date: d.milExp, none: d.hasMil === false });
+  if (S.settings.trackMedical) out.push({ key: 'medicalExp', label: 'כשירות רפואית', date: d.medicalExp });
+  return out;
+}
+function driverStatus(d) {
+  const reasons = []; let lv = 'ok';
+  const bump = l => { if (LV_ORDER[l] < LV_ORDER[lv]) lv = l; };
+  if (d.suspended?.active) {
+    reasons.push('מושעה מנהיגה' + (d.suspended.reason ? ' – ' + d.suspended.reason : '') + (d.suspended.until ? ' (עד ' + fmtDate(d.suspended.until) + ')' : ''));
+    bump('bad');
+  }
+  for (const it of driverItems(d)) {
+    const n = daysUntil(it.date);
+    if (n == null) { if (it.none) { reasons.push('אין ' + it.label); bump('bad'); } else { reasons.push('חסר תאריך: ' + it.label); bump('warn'); } }
+    else if (n < 0) { reasons.push(`${it.label} פג תוקף לפני ${-n} ימים`); bump('bad'); }
+    else if (n <= S.settings.warnDays) { reasons.push(`${it.label} פג בעוד ${n} ימים`); bump('warn'); }
+  }
+  const ids = Object.keys(d.permits || {});
+  if (!ids.length) { reasons.push('אין היתרים לסוגי רכב'); bump('bad'); }
+  else {
+    for (const id of ids) {
+      const t = S.data.types.find(x => x.id === id); const nm = t?.name || '?';
+      const n = daysUntil(permitExp(d, id));
+      if (!gradeOk(d, t)) { reasons.push(`${nm}: נדרש רישיון ${t.grade}`); bump('warn'); }
+      else if (n == null) { reasons.push(`לא עבר ריענון על ${nm}`); bump('warn'); }
+      else if (n < 0) { reasons.push(`ריענון ${nm} פג לפני ${-n} ימים`); bump('warn'); }
+      else if (n <= S.settings.warnDays) { reasons.push(`ריענון ${nm} פג בעוד ${n} ימים`); bump('warn'); }
+    }
+    if (!ids.some(id => permitValid(d, id))) { reasons.unshift('אין אף סוג רכב עם ריענון בתוקף'); bump('bad'); }
+  }
+  const label = d.suspended?.active ? 'מושעה' : LV_LABEL[lv];
+  return { lv, label, reasons };
+}
+function driverNextExpiry(d) {
+  const all = [
+    ...driverItems(d).filter(i => i.date).map(i => ({ label: i.label, date: i.date })),
+    ...Object.keys(d.permits || {}).map(id => ({ label: 'ריענון ' + typeName(id), date: permitExp(d, id) })).filter(i => i.date),
+  ];
+  return all.map(i => ({ ...i, days: daysUntil(i.date) })).sort((a, b) => a.days - b.days)[0] || null;
+}
+
+/* ---------- readiness: vehicles ---------- */
+function vService(v) {
+  const t = typeOf(v);
+  if (!v.lastServiceDate) return null;
+  const dueDate = t?.serviceDays ? addDays(v.lastServiceDate, t.serviceDays) : null;
+  const hasKm = t?.serviceKm && v.lastServiceKm !== '' && v.lastServiceKm != null;
+  const dueKm = hasKm ? Number(v.lastServiceKm) + Number(t.serviceKm) : null;
+  return {
+    dueDate, dueKm,
+    daysLeft: dueDate ? daysUntil(dueDate) : null,
+    kmLeft: (dueKm != null && v.km !== '' && v.km != null) ? dueKm - Number(v.km) : null,
+  };
+}
+const openFaults = v => S.data.faults.filter(f => f.vehicleId === v.id && f.status !== 'סגורה');
+function vehicleStatus(v) {
+  const reasons = []; let lv = 'ok';
+  const bump = l => { if (LV_ORDER[l] < LV_ORDER[lv]) lv = l; };
+  const fl = openFaults(v);
+  const prev = fl.filter(f => f.severity === 'מונעת');
+  if (v.inWorkshop) { reasons.push('הרכב בסדנה / בטיפול'); bump('info'); }
+  prev.forEach(f => { reasons.push('תקלה מונעת: ' + f.text); bump('bad'); });
+  fl.filter(f => f.severity !== 'מונעת').forEach(f => { reasons.push('תקלה פתוחה: ' + f.text); bump('warn'); });
+  const s = vService(v);
+  if (!s) { reasons.push('אין רישום טיפול תקופתי'); bump('warn'); }
+  else {
+    if (s.daysLeft != null && s.daysLeft < 0) { reasons.push(`טיפול תקופתי באיחור של ${-s.daysLeft} ימים`); bump('bad'); }
+    else if (s.daysLeft != null && s.daysLeft <= S.settings.serviceWarnDays) { reasons.push(`טיפול תקופתי בעוד ${s.daysLeft} ימים`); bump('warn'); }
+    if (s.kmLeft != null && s.kmLeft < 0) { reasons.push(`חריגה של ${fmtNum(-s.kmLeft)} ק״מ ממועד הטיפול`); bump('bad'); }
+    else if (s.kmLeft != null && s.kmLeft <= S.settings.serviceWarnKm) { reasons.push(`טיפול תקופתי בעוד ${fmtNum(s.kmLeft)} ק״מ`); bump('warn'); }
+  }
+  let label = { ok: 'כשיר', warn: 'כשיר במגבלה', bad: 'מושבת', info: 'בטיפול' }[lv];
+  if (v.inWorkshop && lv !== 'bad') label = 'בטיפול';
+  return { lv, label, reasons };
+}
+const vehicleUsable = v => { const s = vehicleStatus(v); return s.lv === 'ok' || s.lv === 'warn'; };
+const driverUsable = d => driverStatus(d).lv !== 'bad';
+
+/* ---------- data store ---------- */
+let renderQueued = false;
+function scheduleRender() {
+  if (renderQueued) return;
+  renderQueued = true;
+  requestAnimationFrame(() => { renderQueued = false; if (S.user) App.refresh(); });
+}
+const clean = o => JSON.parse(JSON.stringify(o));
+
+const Store = {
+  backend: null,
+  all: c => S.data[c],
+  get: (c, id) => S.data[c].find(x => x.id === id),
+  put(c, obj, auditText) {
+    obj.id = obj.id || uid();
+    obj.updatedAt = new Date().toISOString();
+    obj.updatedBy = S.user?.name || '';
+    Promise.resolve(this.backend.put(c, clean(obj))).catch(e => toast('שגיאה בשמירה: ' + e.message, 'bad'));
+    if (auditText) this.log(auditText);
+    return obj;
+  },
+  remove(c, id, auditText) {
+    Promise.resolve(this.backend.remove(c, id)).catch(e => toast('שגיאה במחיקה: ' + e.message, 'bad'));
+    if (auditText) this.log(auditText);
+  },
+  log(text) {
+    const a = { id: uid(), at: new Date().toISOString(), by: S.user?.name || '', text };
+    Promise.resolve(this.backend.put('audit', a)).catch(() => {});
+  },
+  saveSettings(s) {
+    S.settings = { ...DEFAULT_SETTINGS, ...s };
+    Promise.resolve(this.backend.putSettings(S.settings)).catch(e => toast('שגיאה בשמירה: ' + e.message, 'bad'));
+    this.log('עודכנו הגדרות המערכת');
+    scheduleRender();
+  },
+};
+
+/* demo backend – memory only, sample data */
+const DemoBackend = {
+  async init() {
+    seedDemo();
+    S.user = { name: 'קצין רכב (הדגמה)', role: 'admin', unitId: '', email: '' };
+  },
+  put(c, o) {
+    const arr = S.data[c]; const i = arr.findIndex(x => x.id === o.id);
+    if (i >= 0) arr[i] = { ...arr[i], ...o }; else arr.push(o);
+    if (c === 'audit' && arr.length > 500) arr.shift();
+    scheduleRender();
+  },
+  remove(c, id) { S.data[c] = S.data[c].filter(x => x.id !== id); scheduleRender(); },
+  putSettings() { scheduleRender(); },
+};
+
+/* local backend – this browser only (localStorage), used until the cloud is connected */
+const LS_KEY = 'gdud-fleet-v1';
+const LocalBackend = {
+  timer: null,
+  async init() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { saved = null; }
+    if (saved && saved.data) {
+      for (const c of COLS) S.data[c] = saved.data[c] || [];
+      S.settings = { ...DEFAULT_SETTINGS, ...(saved.settings || {}) };
+    } else {
+      S.data.types = ['האמר', 'אושקוש', 'מתן', 'טטרה', 'אמבולנס', 'דודג׳'].map((name, i) => ({ id: 't' + (i + 1), name, grade: '', serviceDays: 180, serviceKm: 5000 }));
+    }
+    S.user = { name: 'קצין רכב', role: 'admin', unitId: '', email: '' };
+  },
+  save() {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      try { localStorage.setItem(LS_KEY, JSON.stringify({ v: 1, at: new Date().toISOString(), data: S.data, settings: S.settings })); }
+      catch (e) { toast('השמירה במכשיר נכשלה – כדאי להוריד גיבוי מלא', 'bad'); }
+    }, 300);
+  },
+  put(c, o) { DemoBackend.put(c, o); this.save(); },
+  remove(c, id) { DemoBackend.remove(c, id); this.save(); },
+  putSettings() { this.save(); scheduleRender(); },
+};
+
+/* cloud backend – Firebase (Firestore + Google sign-in) */
+const FB_VER = '10.14.1';
+function loadScript(src) {
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('טעינה נכשלה: ' + src)); document.head.appendChild(s); });
+}
+const FireBackend = {
+  db: null, unsub: [],
+  async init() {
+    for (const m of ['app', 'auth', 'firestore']) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`);
+    firebase.initializeApp(CONFIG.firebase);
+    this.db = firebase.firestore();
+    try { await this.db.enablePersistence({ synchronizeTabs: true }); } catch (e) { /* already enabled / unsupported */ }
+    return new Promise(resolve => {
+      firebase.auth().onAuthStateChanged(async u => {
+        if (!u) { App.showLogin(); return; }
+        const email = (u.email || '').toLowerCase();
+        let doc;
+        try { doc = await this.db.collection('users').doc(email).get(); }
+        catch (e) { App.showLogin('לא ניתן לבדוק הרשאות: ' + e.message); return; }
+        if (!doc.exists) { App.showLogin(`לחשבון ${email} אין הרשאה למערכת. פנה לקצין הרכב כדי שיוסיף אותך.`, true); return; }
+        const p = doc.data();
+        S.user = { name: p.name || u.displayName || email, email, role: p.role || 'hq', unitId: p.unitId || '' };
+        this.subscribe();
+        resolve();
+      });
+    });
+  },
+  subscribe() {
+    const r = S.user.role;
+    for (const c of COLS) {
+      let q = this.db.collection(c);
+      if (c === 'users' && r !== 'admin') continue;
+      if (c === 'audit') { if (r === 'company') continue; q = q.orderBy('at', 'desc').limit(300); }
+      if (r === 'company' && ['drivers', 'vehicles', 'faults', 'maint'].includes(c)) q = q.where('unitId', '==', S.user.unitId || '-');
+      this.unsub.push(q.onSnapshot(snap => {
+        S.data[c] = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+        scheduleRender();
+      }, err => toast('שגיאת סנכרון (' + c + '): ' + err.message, 'bad')));
+    }
+    this.unsub.push(this.db.collection('meta').doc('settings').onSnapshot(d => {
+      if (d.exists) S.settings = { ...DEFAULT_SETTINGS, ...d.data() };
+      scheduleRender();
+    }, () => {}));
+  },
+  put(c, o) { const { id, ...rest } = o; return this.db.collection(c).doc(id).set(rest, { merge: true }); },
+  remove(c, id) { return this.db.collection(c).doc(id).delete(); },
+  putSettings(s) { return this.db.collection('meta').doc('settings').set(s); },
+  signIn() { return firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); },
+  signOut() { return firebase.auth().signOut().then(() => location.reload()); },
+};
+
+/* ---------- demo data ---------- */
+function seedDemo() {
+  let seed = 42; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const between = (a, b) => Math.floor(a + rnd() * (b - a + 1));
+  const T = todayISO();
+  S.data.units = [
+    { id: 'u1', name: 'סוללה א׳', order: 1 }, { id: 'u2', name: 'סוללה ב׳', order: 2 },
+    { id: 'u3', name: 'סוללה ג׳', order: 3 }, { id: 'u4', name: 'פלגת מפקדה', order: 4 },
+  ];
+  S.data.types = [
+    { id: 't1', name: 'האמר', grade: 'B', serviceDays: 180, serviceKm: 5000 },
+    { id: 't2', name: 'אושקוש', grade: 'C', serviceDays: 180, serviceKm: 8000 },
+    { id: 't3', name: 'מתן', grade: 'C1', serviceDays: 180, serviceKm: 6000 },
+    { id: 't4', name: 'טטרה', grade: 'C', serviceDays: 180, serviceKm: 8000 },
+    { id: 't5', name: 'אמבולנס', grade: 'C1', serviceDays: 120, serviceKm: 5000 },
+    { id: 't6', name: 'דודג׳', grade: 'B', serviceDays: 180, serviceKm: 7500 },
+  ];
+  const first = ['אורי', 'נועם', 'איתי', 'יונתן', 'עומר', 'דניאל', 'אלון', 'רועי', 'מתן', 'עידו', 'יואב', 'אביב', 'שחר', 'גיא', 'טל', 'אריאל', 'בן', 'נדב', 'עמית', 'אופיר', 'ליאור', 'אדם', 'רז', 'יהונתן', 'אליה', 'הראל', 'דור', 'אסף'];
+  const last = ['כהן', 'לוי', 'מזרחי', 'פרץ', 'ביטון', 'אברהם', 'פרידמן', 'אזולאי', 'דהן', 'שפירא', 'חדד', 'גבאי', 'בן דוד', 'אוחיון', 'קורן', 'סויסה', 'רוזן', 'אלמוג', 'שושן', 'נחום'];
+  const units = ['u1', 'u1', 'u1', 'u2', 'u2', 'u2', 'u3', 'u3', 'u3', 'u4', 'u4'];
+  const drivers = [];
+  for (let i = 0; i < 28; i++) {
+    const pn = String(between(5100000, 9899999));
+    const grade = pick(['B', 'C1', 'C1', 'C', 'C', 'C+E']);
+    const elig = S.data.types.filter(t => GRADES.indexOf(grade) >= GRADES.indexOf(t.grade));
+    const permits = {};
+    elig.slice().sort(() => rnd() - .5).slice(0, between(1, Math.min(3, elig.length))).forEach(t => permits[t.id] = addDays(T, -between(30, 380)));
+    const exp = (lo, hi) => addDays(T, between(lo, hi));
+    drivers.push({
+      id: pn, pn, name: pick(first) + ' ' + pick(last), rank: pick(['טוראי', 'רב״ט', 'רב״ט', 'סמ״ר', 'סמל', 'רס״ל']),
+      unitId: pick(units), phone: '05' + between(0, 8) + '-' + between(1000000, 9999999),
+      service: pick(['מילואים', 'מילואים', 'מילואים', 'סדיר', 'קבע']), civilGrade: grade,
+      civilExp: exp(40, 2400), milLicenseNo: String(between(100000, 999999)), milExp: exp(i % 9 === 0 ? -15 : 20, 900),
+      medicalExp: exp(i % 7 === 0 ? 5 : 30, 700),
+      permits, availability: pick(['ביחידה', 'ביחידה', 'ביחידה', 'בבית', 'בקורס']), suspended: { active: i === 13, reason: i === 13 ? 'אירוע נהיגה – בבירור' : '', until: i === 13 ? addDays(T, 21) : '' },
+      events: i % 5 === 0 ? [{ id: uid(), date: addDays(T, -between(20, 300)), text: 'פגיעה קלה בעת נסיעה לאחור בשטח כינוס, ללא נפגעים' }] : [],
+      notes: '', updatedAt: new Date().toISOString(), updatedBy: 'הדגמה',
+    });
+  }
+  S.data.drivers = window.GDUD_SEED_DRIVERS ? window.GDUD_SEED_DRIVERS.map(d => ({ unitId: '', availability: 'ביחידה', events: [], suspended: { active: false }, notes: '', updatedAt: new Date().toISOString(), updatedBy: 'יבוא מאקסל', ...d })) : drivers;
+  const vehicles = [];
+  const typePlan = ['t1', 't1', 't1', 't1', 't2', 't2', 't2', 't3', 't3', 't4', 't4', 't5', 't5', 't6', 't6', 't1', 't2', 't3', 't6', 't4'];
+  typePlan.forEach((t, i) => {
+    const type = S.data.types.find(x => x.id === t);
+    const lastDays = between(10, i % 6 === 0 ? 200 : 160);
+    const lastKm = between(8000, 90000);
+    const num = String(between(600000, 899999));
+    vehicles.push({
+      id: num, number: num, typeId: t, unitId: ['u1', 'u2', 'u3', 'u4'][i % 4],
+      km: lastKm + between(200, i % 5 === 0 ? type.serviceKm + 400 : type.serviceKm - 600),
+      lastServiceDate: addDays(T, -lastDays), lastServiceKm: lastKm, location: pick(['חניון גדודי', 'שטח כינוס', 'סדנה אוגדתית', 'חניון גדודי']),
+      inWorkshop: i === 9, notes: '', updatedAt: new Date().toISOString(), updatedBy: 'הדגמה',
+    });
+  });
+  S.data.vehicles = vehicles;
+  const fl = [
+    [2, 'נורת בלמים דולקת', 'מונעת', 'פתוחה'], [5, 'דליפת שמן מתחת למנוע', 'מונעת', 'בטיפול'],
+    [7, 'מראה צד שבורה', 'לא מונעת', 'פתוחה'], [12, 'מזגן לא עובד', 'לא מונעת', 'פתוחה'],
+    [3, 'צמיג אחורי שחוק', 'לא מונעת', 'סגורה'],
+  ];
+  S.data.faults = fl.map(([vi, text, severity, status], k) => ({
+    id: 'f' + k, vehicleId: vehicles[vi].id, unitId: vehicles[vi].unitId, text, severity, status,
+    openedAt: addDays(T, -between(1, 12)) + 'T08:00:00', openedBy: 'מ״פ ' + unitName(vehicles[vi].unitId),
+    closedAt: status === 'סגורה' ? addDays(T, -1) + 'T10:00:00' : '', closeNote: status === 'סגורה' ? 'הוחלף צמיג' : '',
+  }));
+  S.data.maint = vehicles.map(v => ({ id: 'm' + v.id, vehicleId: v.id, unitId: v.unitId, date: v.lastServiceDate, km: v.lastServiceKm, kind: 'טיפול תקופתי', note: '' }));
+  S.data.audit = [{ id: uid(), at: new Date().toISOString(), by: 'מערכת', text: 'נטענו נתוני הדגמה' }];
+}
+
+/* =========================================================
+   ui helpers: badges, pills, modal, toast, form fields
+   ========================================================= */
+const badge = st => `<span class="badge ${st.lv}">${esc(st.label)}</span>`;
+function daysPill(n, warn = S.settings.warnDays, due = false) {
+  if (n == null) return '<span class="pill muted">אין נתון</span>';
+  if (n < 0) return `<span class="pill bad">${due ? 'באיחור של' : 'פג לפני'} ${-n} ימים</span>`;
+  if (n === 0) return `<span class="pill bad">${due ? 'היום' : 'פג היום'}</span>`;
+  const txt = n > 90 ? `עוד ${Math.round(n / 30)} חודשים` : `עוד ${n} ימים`;
+  return `<span class="pill ${n <= warn ? 'warn' : 'ok'}">${txt}</span>`;
+}
+function kmPill(k) {
+  if (k == null) return '<span class="pill muted">—</span>';
+  if (k < 0) return `<span class="pill bad">חריגה ${fmtNum(-k)} ק״מ</span>`;
+  return `<span class="pill ${k <= S.settings.serviceWarnKm ? 'warn' : 'ok'}">עוד ${fmtNum(k)} ק״מ</span>`;
+}
+const opt = (v, l, sel) => `<option value="${esc(v)}" ${String(v) === String(sel ?? '') ? 'selected' : ''}>${esc(l)}</option>`;
+const unitOptions = (sel, withAll = true) => (withAll ? opt('', 'כל הפלוגות', sel) : '') + unitsSorted().map(u => opt(u.id, u.name, sel)).join('') + opt('__none', 'ללא שיוך', sel);
+
+function fld(label, name, val = '', o = {}) {
+  const { type = 'text', req, hint, full, opts, attrs = '', ph = '' } = o;
+  let ctl;
+  if (opts) ctl = `<select class="select" name="${name}" ${attrs}>${opts.map(x => { const [v, l] = Array.isArray(x) ? x : [x, x]; return opt(v, l, val); }).join('')}</select>`;
+  else if (type === 'textarea') ctl = `<textarea name="${name}" placeholder="${esc(ph)}" ${attrs}>${esc(val)}</textarea>`;
+  else ctl = `<input class="input" type="${type}" name="${name}" value="${esc(val ?? '')}" placeholder="${esc(ph)}" ${attrs}>`;
+  return `<div class="fld ${full ? 'full' : ''}" data-f="${name}"><label>${esc(label)}${req ? ' <i>*</i>' : ''}</label>${ctl}${hint ? `<div class="hint">${esc(hint)}</div>` : ''}</div>`;
+}
+function fieldErr(form, name, msg) {
+  const f = form.querySelector(`[data-f="${name}"]`);
+  if (f) { f.classList.add('err'); f.insertAdjacentHTML('beforeend', `<div class="msg">${esc(msg)}</div>`); }
+}
+const getter = fd => k => (fd.get(k) ?? '').toString().trim();
+
+function modal({ title, body, submit = 'שמירה', size = '', onSubmit, danger = false, foot = '', onMount }) {
+  const host = $('#modal');
+  host.innerHTML = `<div class="modal-wrap"><form class="modal ${size}" novalidate>
+    <div class="mh"><h2>${esc(title)}</h2><button type="button" class="btn ghost icon sm" data-close aria-label="סגירה">${ic('x')}</button></div>
+    <div class="mb">${body}</div>
+    <div class="mf">${foot}<button type="button" class="btn" data-close>${onSubmit ? 'ביטול' : 'סגירה'}</button>${onSubmit ? `<button class="btn ${danger ? 'danger solid' : 'primary'}" type="submit">${esc(submit)}</button>` : ''}</div>
+  </form></div>`;
+  const form = host.querySelector('form');
+  host.querySelectorAll('[data-close]').forEach(b => b.onclick = closeModal);
+  host.querySelector('.modal-wrap').addEventListener('mousedown', e => { if (e.target.classList.contains('modal-wrap')) closeModal(); });
+  form.onsubmit = e => {
+    e.preventDefault();
+    form.querySelectorAll('.fld.err').forEach(f => { f.classList.remove('err'); f.querySelector('.msg')?.remove(); });
+    const ok = onSubmit ? onSubmit(new FormData(form), form) : true;
+    if (ok !== false) closeModal();
+  };
+  if (onMount) onMount(form);
+  setTimeout(() => form.querySelector('.mb input:not([type=hidden]):not([type=checkbox]):not([disabled]), .mb select, .mb textarea')?.focus(), 60);
+  return form;
+}
+function closeModal() { $('#modal').innerHTML = ''; }
+function confirmBox(title, text, onYes, yes = 'אישור', danger = true) {
+  modal({ title, size: 'sm', body: `<p style="margin:0">${text}</p>`, submit: yes, danger, onSubmit: () => { onYes(); } });
+}
+function toast(msg, kind = 'ok') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + kind;
+  t.innerHTML = (kind === 'ok' ? ic('check', 'sm') : ic('alert', 'sm')) + `<span>${esc(msg)}</span>`;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), kind === 'bad' ? 5000 : 2600);
+}
+function download(name, blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function pickFile(accept) {
+  return new Promise(res => {
+    const i = document.createElement('input'); i.type = 'file'; i.accept = accept;
+    i.onchange = () => res(i.files[0] || null); i.click();
+  });
+}
+
+/* =========================================================
+   App shell, routing and views
+   ========================================================= */
+const NAV = [
+  { r: 'dashboard', l: 'תמונת מצב', i: 'grid' },
+  { r: 'drivers', l: 'נהגים', i: 'users' },
+  { r: 'vehicles', l: 'רכבים', i: 'truck' },
+  { r: 'faults', l: 'תקלות', i: 'wrench' },
+  { r: 'settings', l: 'הגדרות', i: 'settings', admin: true },
+];
+
+const App = {
+  async start() {
+    applyTheme(getTheme());
+    bindGlobalEvents();
+    try {
+      if (S.mode === 'cloud') { Store.backend = FireBackend; await FireBackend.init(); }
+      else if (S.mode === 'demo') { Store.backend = DemoBackend; await DemoBackend.init(); }
+      else { Store.backend = LocalBackend; await LocalBackend.init(); }
+    } catch (e) {
+      $('#app').innerHTML = `<div class="login"><div class="card"><div class="logo">${ic('alert')}</div><h1>שגיאה בטעינת המערכת</h1><p>${esc(e.message)}</p><button class="btn primary" onclick="location.reload()">נסה שוב</button></div></div>`;
+      return;
+    }
+    this.renderShell();
+    let r = ''; try { r = location.hash.replace('#', ''); } catch (e) { }
+    this.go(NAV.some(n => n.r === r) ? r : 'dashboard');
+  },
+
+  showLogin(msg = '', denied = false) {
+    $('#app').innerHTML = `<div class="login"><div class="card">
+      <div class="logo">${ic('shield')}</div>
+      <h1>ניהול נהגים ורכבים</h1>
+      <p>${esc(S.settings.battalion)} · כניסה למשתמשים מורשים</p>
+      ${msg ? `<div class="reasons ${denied ? 'warn' : 'bad'}" style="text-align:start;margin-bottom:16px">${ic('info')}<span>${esc(msg)}</span></div>` : ''}
+      <button class="btn primary" data-act="signin">${ic('google')} כניסה עם חשבון Google</button>
+      ${denied ? '<button class="btn ghost" style="margin-top:8px" data-act="logout">התחברות עם חשבון אחר</button>' : ''}
+    </div></div>`;
+  },
+
+  renderShell() {
+    $('#app').innerHTML = `<div class="app">
+      <aside class="side">
+        <div class="brand"><div class="logo">${ic('shield')}</div><div><b>ניהול נהגים ורכבים</b><small id="bname"></small></div></div>
+        <nav class="nav" id="nav"></nav>
+        <div class="side-foot">
+          <button class="btn ghost sm" data-act="theme" style="justify-content:flex-start">${ic('moon', 'sm')} <span>מצב תצוגה</span></button>
+          <div class="me" id="me"></div>
+        </div>
+      </aside>
+      <div class="main">
+        <header class="top">
+          <div class="mbrand"><div class="logo">${ic('shield')}</div><span>ניהול נהגים ורכבים</span></div>
+          <div class="search">${ic('search')}<input id="gsearch" type="search" placeholder="חיפוש נהג, מספר אישי או מספר רכב…" autocomplete="off"><div id="sres"></div></div>
+          <div class="top-actions" id="topacts"></div>
+        </header>
+        <main class="view" id="view"></main>
+      </div>
+      <nav class="bnav" id="bnav"></nav>
+    </div>`;
+    this.renderChrome();
+  },
+
+  renderChrome() {
+    const openPrev = scoped(S.data.faults).filter(f => f.status !== 'סגורה' && f.severity === 'מונעת').length;
+    const items = NAV.filter(n => !n.admin || isAdmin());
+    const navHTML = (cls) => items.map(n => `<button class="${S.route === n.r ? 'on' : ''}" data-act="nav" data-route="${n.r}">${ic(n.i)}<span>${n.l}</span>${n.r === 'faults' && openPrev ? `<span class="cnt">${openPrev}</span>` : ''}</button>`).join('');
+    $('#nav').innerHTML = navHTML();
+    $('#bnav').innerHTML = navHTML();
+    $('#bname').textContent = S.settings.battalion;
+    const u = S.user;
+    $('#me').innerHTML = `<div class="av">${esc(initials(u.name))}</div><div style="min-width:0;flex:1"><b>${esc(u.name)}</b><small>${ROLE_LABEL[u.role]}${u.role === 'company' ? ' · ' + esc(unitName(u.unitId)) : ''}</small></div>${S.mode === 'cloud' ? `<button class="btn ghost icon sm" data-act="logout" title="יציאה">${ic('logout', 'sm')}</button>` : ''}`;
+    let acts = '';
+    if (S.mode === 'demo') {
+      const val = u.role === 'company' ? 'company:' + u.unitId : u.role;
+      acts += `<label class="rolepick"><span>צפייה כ:</span><select data-act-change="role">${opt('admin', 'קצין רכב', val)}${unitsSorted().map(x => opt('company:' + x.id, 'מ״פ ' + x.name, val)).join('')}${opt('hq', 'סמג״ד / מג״ד', val)}</select></label>`;
+    }
+    acts += `<button class="btn icon" data-act="theme" title="מצב תצוגה">${ic(document.documentElement.dataset.theme === 'dark' ? 'sun' : 'moon')}</button>`;
+    $('#topacts').innerHTML = acts;
+  },
+
+  go(route) {
+    if (route === 'settings' && !isAdmin()) route = 'dashboard';
+    S.route = route;
+    try { if (location.hash !== '#' + route) history.replaceState(null, '', '#' + route); } catch (e) { /* sandboxed preview */ }
+    this.renderChrome();
+    this.renderView(true);
+    try { window.scrollTo(0, 0); } catch (e) { }
+  },
+
+  refresh() {
+    if (!$('#view')) return;
+    if (S.route === 'settings' && !isAdmin()) S.route = 'dashboard';
+    this.renderChrome();
+    const a = document.activeElement;
+    const typing = a && a.closest && a.closest('#view') && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+    this.renderView(!typing);
+    this.renderDrawer();
+  },
+
+  renderView(full) {
+    const v = VIEWS[S.route];
+    if (full) $('#view').innerHTML = demoBanner() + v.page();
+    else if (v.list && $('#list')) $('#list').innerHTML = v.list();
+  },
+
+  openDrawer(type, id) { S.drawer = { type, id }; this.renderDrawer(); },
+  closeDrawer() { S.drawer = null; $('#drawer').innerHTML = ''; },
+  renderDrawer() {
+    const host = $('#drawer');
+    if (!S.drawer) { host.innerHTML = ''; return; }
+    const col = S.drawer.type === 'driver' ? 'drivers' : 'vehicles';
+    const obj = Store.get(col, S.drawer.id);
+    if (!obj) { this.closeDrawer(); return; }
+    const scroll = host.querySelector('.db')?.scrollTop || 0;
+    const fresh = !host.innerHTML;
+    host.innerHTML = `<div class="scrim" data-act="close-drawer"></div><aside class="drawer" role="dialog">${S.drawer.type === 'driver' ? driverDrawer(obj) : vehicleDrawer(obj)}</aside>`;
+    if (!fresh) { host.querySelector('.scrim').style.animation = 'none'; host.querySelector('.drawer').style.animation = 'none'; }
+    const db = host.querySelector('.db'); if (db) db.scrollTop = scroll;
+  },
+};
+
+function demoBanner() {
+  if (S.mode === 'local') return `<div class="demo">${ic('info')}<span><b>שמירה מקומית.</b> הנתונים נשמרים בדפדפן של המכשיר הזה בלבד. מומלץ להוריד מדי פעם גיבוי מלא (הגדרות ← נתונים).</span></div>`;
+  if (S.mode !== 'demo') return '';
+  const what = window.GDUD_SEED_DRIVERS ? `הנהגים נטענו מהקובץ שלך (${window.GDUD_SEED_DRIVERS.length}); הרכבים והפלוגות לדוגמה.` : 'הנתונים לדוגמה.';
+  return `<div class="demo">${ic('info')}<span><b>מצב הדגמה.</b> ${what} שינויים נשמרים רק עד רענון הדף. אחרי החיבור לענן הכל יישמר ויסונכרן בין כל המשתמשים.</span></div>`;
+}
+
+/* ---------- theme ---------- */
+function getTheme() { try { return localStorage.getItem('gdud-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) { return 'light'; } }
+function applyTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem('gdud-theme', t); } catch (e) { } }
+
+/* =========================================================
+   Views
+   ========================================================= */
+const VIEWS = {};
+
+/* ---------- dashboard ---------- */
+VIEWS.dashboard = {
+  page() {
+    const D = scoped(S.data.drivers), V = scoped(S.data.vehicles);
+    const dst = D.map(driverStatus), vst = V.map(vehicleStatus);
+    const dFit = dst.filter(s => s.lv !== 'bad').length, dWarn = dst.filter(s => s.lv === 'warn').length, dBad = dst.filter(s => s.lv === 'bad').length;
+    const vFit = vst.filter(s => s.lv === 'ok' || s.lv === 'warn').length, vBad = vst.filter(s => s.lv === 'bad').length, vShop = vst.filter(s => s.lv === 'info').length;
+    const F = scoped(S.data.faults).filter(f => f.status !== 'סגורה');
+    const fPrev = F.filter(f => f.severity === 'מונעת').length;
+    const exp = expiringItems(D, V);
+    const soon = exp.filter(x => x.days >= 0).length;
+    const title = S.user.role === 'company' ? 'תמונת מצב – ' + unitName(S.user.unitId) : 'תמונת מצב גדודית';
+    const first = isAdmin() && !S.data.drivers.length && !S.data.vehicles.length ? `
+      <section class="card" style="margin-bottom:16px"><div class="body" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:18px">
+        <div class="logo" style="width:44px;height:44px">${ic('upload')}</div>
+        <div style="flex:1;min-width:220px"><b style="font-size:16px">מתחילים: טוענים את הנהגים</b><div class="t-muted">ייבא את קובץ האקסל הקיים (גם בפורמט "צריך רענון על / עבר רענון על"), או הורד תבנית ומלא אותה.</div></div>
+        <button class="btn primary" data-act="import">${ic('upload')}יבוא מאקסל</button><button class="btn" data-act="template">${ic('sheet')}תבנית</button>
+        <button class="btn ghost" data-act="nav" data-route="settings">${ic('settings')}פלוגות וסוגי רכב</button>
+      </div></section>` : '';
+    return `
+      <div class="phead"><div><h1>${esc(title)}</h1><p class="sub">${esc(S.settings.battalion)} · ${LONG_DATE()}</p></div></div>${first}
+      <div class="kpis">
+        ${kpi('נהגים כשירים', 'users', dFit, D.length, `${dWarn} עומדים לפקוע · ${dBad} לא כשירים`, 'drivers')}
+        ${kpi('רכבים כשירים', 'truck', vFit, V.length, `${vShop} בטיפול · ${vBad} מושבתים`, 'vehicles')}
+        <div class="card kpi" data-act="nav" data-route="faults"><div class="lbl">${ic('alert')}תקלות מונעות פתוחות</div><div class="val ${fPrev ? 't-bad' : 't-ok'}">${fPrev}</div><div class="foot">${F.length - fPrev} תקלות נוספות פתוחות</div></div>
+        <div class="card kpi" data-act="goto" data-route="drivers" data-status="warn"><div class="lbl">${ic('clock')}פקיעות ב-${S.settings.warnDays} יום</div><div class="val ${soon ? 't-warn' : 't-ok'}">${soon}</div><div class="foot">${exp.length - soon ? `<span class="t-bad">${exp.length - soon} כבר פגו</span> · ` : ''}רישיונות, כשירויות וטיפולים</div></div>
+      </div>
+      <div class="grid2 wide">
+        <section class="card"><header><h2>כשירות לפי פלוגה וסוג רכב</h2></header><div class="body">${matrixHTML(D, V)}</div></section>
+        <section class="card"><header><h2>פקיעות קרובות</h2><a href="#" class="more" data-act="goto" data-route="drivers" data-status="warn">לכל הנהגים</a></header><div class="body">${expiringHTML(exp)}</div></section>
+      </div>
+      <div class="grid2">
+        <section class="card"><header><h2>תקלות פתוחות</h2><a href="#" class="more" data-act="nav" data-route="faults">לכל התקלות</a></header><div class="body">${faultsMini(F)}</div></section>
+        <section class="card"><header><h2>זמינות נהגים לפי פלוגה</h2></header><div class="body">${availHTML(D)}</div></section>
+      </div>`;
+  },
+};
+function kpi(label, icon, n, tot, foot, route) {
+  const pct = tot ? Math.round(n / tot * 100) : 0;
+  const c = pct >= 85 ? 'ok' : pct >= 70 ? 'warn' : 'bad';
+  return `<div class="card kpi" data-act="nav" data-route="${route}"><div class="lbl">${ic(icon)}${label}</div>
+    <div class="val"><span class="num">${n}</span> <small>מתוך ${tot}</small></div>
+    <div class="bar"><i class="b-${c}" style="width:${pct}%"></i></div><div class="foot">${foot}</div></div>`;
+}
+function expiringItems(D, V) {
+  const out = [];
+  for (const d of D) {
+    const its = [...driverItems(d), ...Object.keys(d.permits || {}).map(id => ({ label: 'ריענון ' + typeName(id), date: permitExp(d, id) }))];
+    for (const it of its) {
+      const n = daysUntil(it.date);
+      if (n != null && n <= S.settings.warnDays) out.push({ kind: 'driver', id: d.id, title: d.name, sub: `${it.label} · ${unitName(d.unitId)}`, days: n, date: it.date });
+    }
+  }
+  for (const v of V) {
+    const s = vService(v);
+    if (s && s.daysLeft != null && s.daysLeft <= S.settings.serviceWarnDays) out.push({ kind: 'vehicle', id: v.id, title: `${typeName(v.typeId)} ${v.number}`, sub: `טיפול תקופתי · ${unitName(v.unitId)}`, days: s.daysLeft, date: s.dueDate });
+  }
+  return out.sort((a, b) => a.days - b.days);
+}
+function expiringHTML(items) {
+  if (!items.length) return `<div class="empty-state">${ic('check')}<b>אין פקיעות קרובות</b>כל התוקפים בסדר</div>`;
+  return `<div class="rows">${items.slice(0, 9).map(x => `
+    <div class="row" data-act="open-${x.kind}" data-id="${esc(x.id)}">
+      <div class="av" style="width:32px;height:32px;font-size:12px">${x.kind === 'driver' ? esc(initials(x.title)) : ic('truck', 'sm')}</div>
+      <div class="grow"><b>${esc(x.title)}</b><small>${esc(x.sub)} · ${fmtDate(x.date)}</small></div>${daysPill(x.days, S.settings.warnDays, x.kind === 'vehicle')}
+    </div>`).join('')}</div>${items.length > 9 ? `<div class="foot-note" style="margin-top:8px">ועוד ${items.length - 9} פריטים</div>` : ''}`;
+}
+function matrixHTML(D, V) {
+  let units = S.user.role === 'company' ? S.data.units.filter(u => u.id === S.user.unitId) : unitsSorted();
+  if (S.user.role !== 'company' && (D.some(d => !d.unitId) || V.some(v => !v.unitId))) units = [...units, { id: '', name: 'ללא שיוך' }];
+  const types = typesSorted().filter(t => V.some(v => v.typeId === t.id) || D.some(d => hasPermit(d, t.id)));
+  if (!units.length || !types.length) return `<div class="empty-state">${ic('grid')}<b>אין עדיין נתונים</b>הוסף פלוגות, סוגי רכב ורכבים כדי לראות את המטריצה</div>`;
+  const cell = (u, t) => {
+    const vs = V.filter(v => (v.unitId || '') === u.id && v.typeId === t.id);
+    const fit = vs.filter(vehicleUsable).length;
+    const ds = D.filter(d => (d.unitId || '') === u.id && permitValid(d, t.id) && driverUsable(d)).length;
+    if (!vs.length && !ds) return `<td class="c-none">—</td>`;
+    let c = !vs.length ? 'c-none' : fit === vs.length ? 'c-ok' : fit / vs.length >= .5 ? 'c-warn' : 'c-bad';
+    if (vs.length && c === 'c-ok' && ds < fit) c = 'c-warn';
+    return `<td class="${c}" data-act="goto" data-route="vehicles" data-unit="${u.id || '__none'}" data-type="${t.id}" style="cursor:pointer"><b>${vs.length ? `${fit}<span class="of"> מתוך ${vs.length}</span>` : '<span class="of">אין רכבים</span>'}</b><small>${ds} נהגים</small></td>`;
+  };
+  return `<div class="tbl-wrap"><table class="matrix"><thead><tr><th></th>${types.map(t => `<th>${esc(t.name)}</th>`).join('')}</tr></thead>
+    <tbody>${units.map(u => `<tr><th class="u">${esc(u.name)}</th>${types.map(t => cell(u, t)).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="foot-note" style="text-align:start;margin-top:8px">בכל תא: רכבים כשירים מתוך סה״כ, ונהגים כשירים עם היתר לסוג. כתום = חסרים נהגים או רכבים לא כשירים.</div>`;
+}
+function faultsMini(F) {
+  if (!F.length) return `<div class="empty-state">${ic('check')}<b>אין תקלות פתוחות</b></div>`;
+  const list = [...F].sort((a, b) => (a.severity === 'מונעת' ? 0 : 1) - (b.severity === 'מונעת' ? 0 : 1) || String(b.openedAt).localeCompare(String(a.openedAt)));
+  return `<div class="rows">${list.slice(0, 6).map(f => {
+    const v = Store.get('vehicles', f.vehicleId);
+    return `<div class="row" data-act="open-vehicle" data-id="${esc(f.vehicleId)}"><span class="dot" style="background:var(--${f.severity === 'מונעת' ? 'bad' : 'warn'})"></span>
+      <div class="grow"><b>${esc(f.text)}</b><small>${esc(typeName(v?.typeId))} ${esc(v?.number || '')} · ${esc(unitName(f.unitId))} · ${esc(f.status)}</small></div>
+      <span class="pill ${f.severity === 'מונעת' ? 'bad' : 'warn'}">${esc(f.severity)}</span></div>`;
+  }).join('')}</div>`;
+}
+function availHTML(D) {
+  let units = S.user.role === 'company' ? S.data.units.filter(u => u.id === S.user.unitId) : unitsSorted();
+  if (S.user.role !== 'company' && D.some(d => !d.unitId)) units = [...units, { id: '', name: 'ללא שיוך' }];
+  if (!D.length) return `<div class="empty-state">${ic('users')}<b>אין נהגים במערכת</b></div>`;
+  return `<div class="rows">${units.map(u => {
+    const ds = D.filter(d => (d.unitId || '') === u.id); if (!ds.length) return '';
+    const here = ds.filter(d => (d.availability || 'ביחידה') === 'ביחידה').length;
+    const fit = ds.filter(d => (d.availability || 'ביחידה') === 'ביחידה' && driverUsable(d)).length;
+    return `<div class="row" data-act="goto" data-route="drivers" data-unit="${u.id || '__none'}"><div class="grow"><b>${esc(u.name)}</b><small>${here} ביחידה מתוך ${ds.length} · ${fit} מהם כשירים</small>
+      <div class="bar" style="margin-top:6px"><i class="b-ok" style="width:${Math.round(fit / ds.length * 100)}%"></i></div></div></div>`;
+  }).join('')}</div>`;
+}
+
+/* ---------- drivers ---------- */
+function driversFiltered(ignoreStatus) {
+  const f = S.f.drivers, q = f.q.toLowerCase();
+  return scoped(S.data.drivers).filter(d => {
+    if (f.unit === '__none' ? d.unitId : (f.unit && d.unitId !== f.unit)) return false;
+    if (q && !`${d.name} ${d.pn} ${d.phone || ''}`.toLowerCase().includes(q)) return false;
+    if (!ignoreStatus && f.status && driverStatus(d).lv !== f.status) return false;
+    return true;
+  }).sort((a, b) => LV_ORDER[driverStatus(a).lv] - LV_ORDER[driverStatus(b).lv] || byName(a, b));
+}
+VIEWS.drivers = {
+  page() {
+    const f = S.f.drivers, base = driversFiltered(true);
+    const cnt = lv => base.filter(d => driverStatus(d).lv === lv).length;
+    const seg = [['', 'הכל', base.length], ['ok', 'כשירים', cnt('ok')], ['warn', 'עומדים לפקוע', cnt('warn')], ['bad', 'לא כשירים', cnt('bad')]];
+    return `
+      <div class="phead"><div><h1>נהגים</h1><p class="sub">${scoped(S.data.drivers).length} נהגים${S.user.role === 'company' ? ' ב' + esc(unitName(S.user.unitId)) : ' בגדוד'}</p></div>
+        <div class="acts">
+          ${isAdmin() ? `<button class="btn primary" data-act="add-driver">${ic('plus')}נהג חדש</button><button class="btn" data-act="import">${ic('upload')}יבוא מאקסל</button>` : ''}
+          <button class="btn" data-act="export">${ic('download')}יצוא לאקסל</button>
+        </div></div>
+      <div class="toolbar">
+        <div class="tb-search">${ic('search', 'sm')}<input class="input" type="search" placeholder="שם, מספר אישי או טלפון" value="${esc(f.q)}" data-filter="drivers.q"></div>
+        ${S.user.role !== 'company' ? `<select class="select" data-filter="drivers.unit">${unitOptions(f.unit)}</select>` : ''}
+        <div class="seg">${seg.map(([v, l, n]) => `<button class="${f.status === v ? 'on' : ''}" data-act="setf" data-k="drivers.status" data-v="${v}">${l} <span class="n">${n}</span></button>`).join('')}</div>
+      </div>
+      <div class="card list" id="list">${this.list()}</div>`;
+  },
+  list() {
+    const rows = driversFiltered();
+    if (!rows.length) return `<div class="empty-state">${ic('users')}<b>${S.data.drivers.length ? 'לא נמצאו נהגים' : 'עדיין אין נהגים'}</b>${S.data.drivers.length ? 'נסה לשנות את הסינון' : (isAdmin() ? 'הוסף נהג או ייבא רשימה מאקסל' : '')}</div>`;
+    const permChips = d => {
+      const ids = Object.keys(d.permits || {});
+      if (!ids.length) return '<span class="t-muted">—</span>';
+      return `<div class="chips">${ids.map(id => { const t = S.data.types.find(x => x.id === id); return `<span class="chip ${!permitValid(d, id) ? 'off' : ''}" title="${permitValid(d, id) ? 'ריענון בתוקף' : 'אין ריענון בתוקף'}">${esc(t?.name || '?')}</span>`; }).join('')}</div>`;
+    };
+    const nx = d => { const n = driverNextExpiry(d); return n ? `<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start"><small class="t-muted">${n.label} · ${fmtDate(n.date)}</small>${daysPill(n.days)}</div>` : '—'; };
+    return `<div class="card tbl-wrap resp"><table class="tbl"><thead><tr><th>נהג</th><th>דרגה</th><th>פלוגה</th><th>היתרים</th><th>תוקף קרוב</th><th>זמינות</th><th>סטטוס</th></tr></thead><tbody>
+      ${rows.map(d => `<tr data-act="open-driver" data-id="${esc(d.id)}">
+        <td><div class="who"><div class="av">${esc(initials(d.name))}</div><div><b>${esc(d.name)}</b><small class="num">${esc(d.pn)}</small></div></div></td>
+        <td>${esc(d.rank || '—')}</td><td>${esc(unitName(d.unitId))}</td><td>${permChips(d)}</td><td>${nx(d)}</td>
+        <td>${esc(d.availability || 'ביחידה')}</td><td>${badge(driverStatus(d))}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="cards">${rows.map(d => { const n = driverNextExpiry(d); return `<div class="mcard" data-act="open-driver" data-id="${esc(d.id)}">
+      <div class="r1"><div class="av">${esc(initials(d.name))}</div><div class="who"><div><b>${esc(d.name)}</b><small>${d.rank ? esc(d.rank) + ' · ' : ''}${esc(unitName(d.unitId))}</small></div></div>${badge(driverStatus(d))}</div>
+      ${permChips(d)}
+      <div class="r2"><span>${n ? n.label + ' · ' + fmtDate(n.date) : ''}</span>${n ? daysPill(n.days) : ''}</div></div>`; }).join('')}</div>`;
+  },
+};
+
+/* ---------- vehicles ---------- */
+function vehiclesFiltered(ignoreStatus) {
+  const f = S.f.vehicles, q = f.q.toLowerCase();
+  return scoped(S.data.vehicles).filter(v => {
+    if (f.unit === '__none' ? v.unitId : (f.unit && v.unitId !== f.unit)) return false;
+    if (f.type && v.typeId !== f.type) return false;
+    if (q && !`${v.number} ${typeName(v.typeId)} ${v.location || ''}`.toLowerCase().includes(q)) return false;
+    if (!ignoreStatus && f.status && vehicleStatus(v).lv !== f.status) return false;
+    return true;
+  }).sort((a, b) => LV_ORDER[vehicleStatus(a).lv] - LV_ORDER[vehicleStatus(b).lv] || typeName(a.typeId).localeCompare(typeName(b.typeId), 'he') || String(a.number).localeCompare(String(b.number)));
+}
+VIEWS.vehicles = {
+  page() {
+    const f = S.f.vehicles, base = vehiclesFiltered(true);
+    const cnt = lv => base.filter(v => vehicleStatus(v).lv === lv).length;
+    const seg = [['', 'הכל', base.length], ['ok', 'כשירים', cnt('ok')], ['warn', 'במגבלה', cnt('warn')], ['bad', 'מושבתים', cnt('bad')], ['info', 'בטיפול', cnt('info')]];
+    return `
+      <div class="phead"><div><h1>רכבים</h1><p class="sub">${scoped(S.data.vehicles).length} רכבים${S.user.role === 'company' ? ' ב' + esc(unitName(S.user.unitId)) : ' בגדוד'}</p></div>
+        <div class="acts">
+          ${can('fault.open') ? `<button class="btn" data-act="open-fault">${ic('alert')}פתיחת תקלה</button>` : ''}
+          ${isAdmin() ? `<button class="btn primary" data-act="add-vehicle">${ic('plus')}רכב חדש</button><button class="btn" data-act="import">${ic('upload')}יבוא מאקסל</button>` : ''}
+          <button class="btn" data-act="export">${ic('download')}יצוא לאקסל</button>
+        </div></div>
+      <div class="toolbar">
+        <div class="tb-search">${ic('search', 'sm')}<input class="input" type="search" placeholder="מספר רכב, סוג או מיקום" value="${esc(f.q)}" data-filter="vehicles.q"></div>
+        ${S.user.role !== 'company' ? `<select class="select" data-filter="vehicles.unit">${unitOptions(f.unit)}</select>` : ''}
+        <select class="select" data-filter="vehicles.type">${opt('', 'כל הסוגים', f.type)}${typesSorted().map(t => opt(t.id, t.name, f.type)).join('')}</select>
+        <div class="seg">${seg.map(([v, l, n]) => `<button class="${f.status === v ? 'on' : ''}" data-act="setf" data-k="vehicles.status" data-v="${v}">${l} <span class="n">${n}</span></button>`).join('')}</div>
+      </div>
+      <div class="card list" id="list">${this.list()}</div>`;
+  },
+  list() {
+    const rows = vehiclesFiltered();
+    if (!rows.length) return `<div class="empty-state">${ic('truck')}<b>${S.data.vehicles.length ? 'לא נמצאו רכבים' : 'עדיין אין רכבים'}</b>${S.data.vehicles.length ? 'נסה לשנות את הסינון' : (isAdmin() ? 'הוסף רכב או ייבא רשימה מאקסל' : '')}</div>`;
+    const svc = v => { const s = vService(v); if (!s) return '<span class="pill muted">אין רישום</span>'; return `<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">${s.dueDate ? daysPill(s.daysLeft, S.settings.serviceWarnDays, true) : ''}${s.kmLeft != null ? kmPill(s.kmLeft) : ''}</div>`; };
+    const fl = v => { const o = openFaults(v); if (!o.length) return '<span class="t-muted">—</span>'; const p = o.some(f => f.severity === 'מונעת'); return `<span class="pill ${p ? 'bad' : 'warn'}">${o.length} ${o.length === 1 ? 'פתוחה' : 'פתוחות'}</span>`; };
+    return `<div class="card tbl-wrap resp"><table class="tbl"><thead><tr><th>רכב</th><th>פלוגה</th><th>ק״מ</th><th>טיפול הבא</th><th>תקלות</th><th>מיקום</th><th>סטטוס</th></tr></thead><tbody>
+      ${rows.map(v => `<tr data-act="open-vehicle" data-id="${esc(v.id)}">
+        <td><div class="who"><div class="av">${ic('truck', 'sm')}</div><div><b class="vid">${esc(v.number)}</b><small>${esc(typeName(v.typeId))}</small></div></div></td>
+        <td>${esc(unitName(v.unitId))}</td><td><span class="num">${fmtNum(v.km)}</span></td><td>${svc(v)}</td><td>${fl(v)}</td><td>${esc(v.location || '—')}</td><td>${badge(vehicleStatus(v))}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="cards">${rows.map(v => `<div class="mcard" data-act="open-vehicle" data-id="${esc(v.id)}">
+      <div class="r1"><div class="av">${ic('truck', 'sm')}</div><div class="who"><div><b class="vid">${esc(v.number)}</b><small>${esc(typeName(v.typeId))} · ${esc(unitName(v.unitId))}</small></div></div>${badge(vehicleStatus(v))}</div>
+      <div class="r2"><span>${fmtNum(v.km)} ק״מ</span><span>${fl(v)}</span></div></div>`).join('')}</div>`;
+  },
+};
+
+/* ---------- faults ---------- */
+function faultsFiltered() {
+  const f = S.f.faults;
+  return scoped(S.data.faults).filter(x => {
+    if (f.status === 'open' && x.status === 'סגורה') return false;
+    if (f.status === 'closed' && x.status !== 'סגורה') return false;
+    if (f.unit === '__none' ? x.unitId : (f.unit && x.unitId !== f.unit)) return false;
+    return true;
+  }).sort((a, b) => (a.status === 'סגורה') - (b.status === 'סגורה') || (a.severity === 'מונעת' ? 0 : 1) - (b.severity === 'מונעת' ? 0 : 1) || String(b.openedAt).localeCompare(String(a.openedAt)));
+}
+VIEWS.faults = {
+  page() {
+    const f = S.f.faults, all = scoped(S.data.faults);
+    const seg = [['open', 'פתוחות', all.filter(x => x.status !== 'סגורה').length], ['closed', 'סגורות', all.filter(x => x.status === 'סגורה').length], ['all', 'הכל', all.length]];
+    return `
+      <div class="phead"><div><h1>תקלות</h1><p class="sub">מעקב תקלות ברכבים, מהפתיחה ועד הסגירה</p></div>
+        <div class="acts">${can('fault.open') ? `<button class="btn primary" data-act="open-fault">${ic('plus')}פתיחת תקלה</button>` : ''}</div></div>
+      <div class="toolbar">
+        <div class="seg">${seg.map(([v, l, n]) => `<button class="${f.status === v ? 'on' : ''}" data-act="setf" data-k="faults.status" data-v="${v}">${l} <span class="n">${n}</span></button>`).join('')}</div>
+        ${S.user.role !== 'company' ? `<select class="select" data-filter="faults.unit">${unitOptions(f.unit)}</select>` : ''}
+      </div>
+      <div class="card list" id="list">${this.list()}</div>`;
+  },
+  list() {
+    const rows = faultsFiltered();
+    if (!rows.length) return `<div class="empty-state">${ic('check')}<b>אין תקלות להצגה</b></div>`;
+    const acts = f => !isAdmin() ? '' : f.status === 'סגורה' ? '' :
+      `${f.status === 'פתוחה' ? `<button class="btn sm" data-act="fault-progress" data-id="${esc(f.id)}">לטיפול</button>` : ''}<button class="btn sm" data-act="fault-close" data-id="${esc(f.id)}">${ic('check', 'sm')}סגירה</button>`;
+    const stPill = f => `<span class="badge ${f.status === 'סגורה' ? 'muted' : f.status === 'בטיפול' ? 'info' : f.severity === 'מונעת' ? 'bad' : 'warn'}">${esc(f.status)}</span>`;
+    return `<div class="card tbl-wrap resp"><table class="tbl"><thead><tr><th>רכב</th><th>תקלה</th><th>חומרה</th><th>נפתחה</th><th>סטטוס</th><th></th></tr></thead><tbody>
+      ${rows.map(f => { const v = Store.get('vehicles', f.vehicleId); return `<tr data-act="open-vehicle" data-id="${esc(f.vehicleId)}">
+        <td><b class="vid">${esc(v?.number || '?')}</b><br><small class="t-muted">${esc(typeName(v?.typeId))} · ${esc(unitName(f.unitId))}</small></td>
+        <td>${esc(f.text)}${f.closeNote ? `<br><small class="t-muted">טיפול: ${esc(f.closeNote)}</small>` : ''}</td>
+        <td><span class="pill ${f.severity === 'מונעת' ? 'bad' : 'warn'}">${esc(f.severity)}</span></td>
+        <td><small>${fmtDateTime(f.openedAt)}<br><span class="t-muted">${esc(f.openedBy || '')}</span></small></td>
+        <td>${stPill(f)}</td><td style="white-space:nowrap">${acts(f)}</td></tr>`; }).join('')}
+    </tbody></table></div>
+    <div class="cards">${rows.map(f => { const v = Store.get('vehicles', f.vehicleId); return `<div class="mcard" data-act="open-vehicle" data-id="${esc(f.vehicleId)}">
+      <div class="r1"><div><b>${esc(f.text)}</b><br><small class="t-muted">${esc(typeName(v?.typeId))} ${esc(v?.number || '')} · ${esc(unitName(f.unitId))}</small></div>${stPill(f)}</div>
+      <div class="r2"><span class="pill ${f.severity === 'מונעת' ? 'bad' : 'warn'}">${esc(f.severity)}</span><span>${fmtDateTime(f.openedAt)}</span></div>
+      ${acts(f) ? `<div style="display:flex;gap:8px">${acts(f)}</div>` : ''}</div>`; }).join('')}</div>`;
+  },
+};
+
+/* ---------- settings ---------- */
+VIEWS.settings = {
+  page() {
+    const s = S.settings;
+    const units = unitsSorted(), types = typesSorted();
+    const audit = [...S.data.audit].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 40);
+    const users = [...S.data.users].sort(byName);
+    return `
+      <div class="phead"><div><h1>הגדרות</h1><p class="sub">פלוגות, סוגי רכב, משתמשים, ספי התראה ונתונים</p></div></div>
+      <div class="set-grid">
+        <section class="card"><header><h2>כללי וספי התראה</h2></header><div class="body">
+          <form class="form" data-form="general">
+            ${fld('שם היחידה', 'battalion', s.battalion, { full: true, req: true })}
+            ${fld('התראה לפני פקיעת תוקף (ימים)', 'warnDays', s.warnDays, { type: 'number', attrs: 'min="1" max="180"' })}
+            ${fld('תוקף ריענון נהיגה (חודשים)', 'refresherMonths', s.refresherMonths, { type: 'number', attrs: 'min="1" max="60"' })}
+            ${fld('התראה לפני טיפול (ימים)', 'serviceWarnDays', s.serviceWarnDays, { type: 'number', attrs: 'min="1" max="90"' })}
+            ${fld('התראה לפני טיפול (ק״מ)', 'serviceWarnKm', s.serviceWarnKm, { type: 'number', attrs: 'min="0" step="100"' })}
+            ${fld('מעקב אחר כשירות רפואית', 'trackMedical', s.trackMedical ? 'yes' : 'no', { opts: [['no', 'לא'], ['yes', 'כן']], hint: 'כשמופעל, נהג בלי תוקף רפואי יסומן' })}
+            <div class="full"><button class="btn primary" type="submit">${ic('check')}שמירת הגדרות</button></div>
+          </form></div></section>
+
+        <section class="card"><header><h2>פלוגות</h2><button class="btn sm more" data-act="unit-add">${ic('plus', 'sm')}פלוגה</button></header><div class="body">
+          <div class="list-ed">${units.map(u => `<div class="li"><div class="grow"><b>${esc(u.name)}</b><br><small>${S.data.drivers.filter(d => d.unitId === u.id).length} נהגים · ${S.data.vehicles.filter(v => v.unitId === u.id).length} רכבים</small></div>
+            <button class="btn ghost icon sm" data-act="unit-edit" data-id="${u.id}" title="עריכה">${ic('edit', 'sm')}</button><button class="btn ghost icon sm danger" data-act="unit-del" data-id="${u.id}" title="מחיקה">${ic('trash', 'sm')}</button></div>`).join('') || '<div class="t-muted">אין פלוגות</div>'}</div>
+        </div></section>
+
+        <section class="card"><header><h2>סוגי רכב</h2><button class="btn sm more" data-act="type-add">${ic('plus', 'sm')}סוג רכב</button></header><div class="body">
+          <div class="list-ed">${types.map(t => `<div class="li"><div class="grow"><b>${esc(t.name)}</b><br><small>${t.grade ? 'רישיון ' + esc(t.grade) + ' · ' : ''} טיפול כל ${t.serviceDays || '—'} ימים / ${fmtNum(t.serviceKm)} ק״מ</small></div>
+            <button class="btn ghost icon sm" data-act="type-edit" data-id="${t.id}" title="עריכה">${ic('edit', 'sm')}</button><button class="btn ghost icon sm danger" data-act="type-del" data-id="${t.id}" title="מחיקה">${ic('trash', 'sm')}</button></div>`).join('') || '<div class="t-muted">אין סוגי רכב</div>'}</div>
+        </div></section>
+
+        <section class="card"><header><h2>משתמשים והרשאות</h2>${S.mode === 'cloud' ? `<button class="btn sm more" data-act="user-add">${ic('plus', 'sm')}משתמש</button>` : ''}</header><div class="body">
+          ${S.mode === 'cloud' ? `<div class="list-ed">${users.map(u => `<div class="li"><div class="av" style="width:32px;height:32px;font-size:12px">${esc(initials(u.name || u.id))}</div><div class="grow"><b>${esc(u.name || u.id)}</b><br><small>${esc(u.id)} · ${ROLE_LABEL[u.role] || u.role}${u.role === 'company' ? ' · ' + esc(unitName(u.unitId)) : ''}</small></div>
+              <button class="btn ghost icon sm" data-act="user-edit" data-id="${esc(u.id)}">${ic('edit', 'sm')}</button>${u.id !== S.user.email ? `<button class="btn ghost icon sm danger" data-act="user-del" data-id="${esc(u.id)}">${ic('trash', 'sm')}</button>` : ''}</div>`).join('')}</div>`
+            : `<div class="reasons info">${ic('info')}<span>ניהול משתמשים נפתח אחרי החיבור לענן. כל משתמש נכנס עם חשבון Google ומקבל אחד משלושה תפקידים: <b>קצין רכב</b> (ניהול מלא), <b>מפקד פלוגה</b> (הפלוגה שלו בלבד) או <b>מפקדת גדוד</b> (צפייה בלבד). אפשר לנסות את התפקידים עכשיו בבורר "צפייה כ" למעלה.</span></div>`}
+        </div></section>
+
+        <section class="card"><header><h2>נתונים</h2></header><div class="body" style="display:flex;flex-wrap:wrap;gap:8px">
+          <button class="btn" data-act="template">${ic('sheet')}הורדת תבנית אקסל</button>
+          <button class="btn" data-act="import">${ic('upload')}יבוא מאקסל</button>
+          <button class="btn" data-act="export">${ic('download')}יצוא לאקסל</button>
+          <button class="btn" data-act="backup">${ic('database')}גיבוי מלא</button>
+          <button class="btn" data-act="restore">${ic('history')}שחזור מגיבוי</button>
+        </div></section>
+
+        <section class="card"><header><h2>יומן שינויים</h2></header><div class="body"><div class="tl">
+          ${audit.map(a => `<div class="it"><span class="d">${fmtDateTime(a.at)}</span><span style="flex:1">${esc(a.text)}</span><small class="t-muted">${esc(a.by)}</small></div>`).join('') || '<div class="t-muted">אין רישומים</div>'}
+        </div></div></section>
+      </div>`;
+  },
+};
+
+/* =========================================================
+   Drawers
+   ========================================================= */
+function driverDrawer(d) {
+  const st = driverStatus(d);
+  const items = driverItems(d);
+  const ev = [...(d.events || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const permIds = Object.keys(d.permits || {});
+  return `
+    <div class="dh"><div class="tt"><div class="av">${esc(initials(d.name))}</div>
+      <div><h2>${esc(d.name)}</h2><div class="meta"><span class="num">${esc(d.pn)}</span>${d.rank ? ' · ' + esc(d.rank) : ''} · ${esc(unitName(d.unitId))}</div><div style="margin-top:7px">${badge(st)}</div></div>
+      <button class="btn ghost icon x" data-act="close-drawer" aria-label="סגירה">${ic('x')}</button></div>
+      <div class="acts">
+        ${isAdmin() ? `<button class="btn sm" data-act="edit-driver" data-id="${esc(d.id)}">${ic('edit', 'sm')}עריכה</button>
+          ${d.suspended?.active ? `<button class="btn sm" data-act="unsuspend" data-id="${esc(d.id)}">${ic('check', 'sm')}ביטול השעיה</button>` : `<button class="btn sm danger" data-act="suspend" data-id="${esc(d.id)}">${ic('ban', 'sm')}השעיה</button>`}`
+          : can('driver.basic', d) ? `<button class="btn sm" data-act="driver-basic" data-id="${esc(d.id)}">${ic('edit', 'sm')}עדכון זמינות וטלפון</button>` : ''}
+        ${d.phone ? `<a class="btn sm" href="tel:${esc(d.phone.replace(/[^\d+]/g, ''))}">${ic('phone', 'sm')}חיוג</a>` : ''}
+      </div></div>
+    <div class="db">
+      ${st.reasons.length ? `<div class="reasons ${st.lv === 'ok' ? 'info' : st.lv}">${ic('alert')}<ul>${st.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>` : ''}
+      <div class="sec"><h3>${ic('clock', 'sm')}תוקפים</h3><div class="kv">
+        ${items.map(it => `<div class="r"><div class="k">${it.label}</div><span class="num">${fmtDate(it.date)}</span><div class="p">${it.none && !it.date ? '<span class="pill bad">אין</span>' : daysPill(daysUntil(it.date))}</div></div>`).join('')}
+        ${d.hasMil === true && !d.milExp ? `<div class="r"><div class="k">רישיון צבאי</div><span>יש</span><div class="p"><span class="pill muted">ללא תאריך</span></div></div>` : ''}
+      </div></div>
+      <div class="sec"><h3>${ic('truck', 'sm')}היתרים וריענונים לפי סוג רכב</h3>
+        ${permIds.length ? `<div class="list-ed">${permIds.map(id => { const t = S.data.types.find(x => x.id === id); const ref = permitRefDate(d, id); return `<div class="li"><div class="grow"><b>${esc(t?.name || 'סוג שנמחק')}</b><br><small>${ref ? `ריענון אחרון ${fmtDate(ref)} · בתוקף עד ${fmtDate(permitExp(d, id))}` : 'לא עבר ריענון'}</small></div>${!gradeOk(d, t) ? `<span class="pill bad">נדרש רישיון ${esc(t.grade)}</span>` : ref ? daysPill(daysUntil(permitExp(d, id))) : '<span class="pill warn">נדרש ריענון</span>'}</div>`; }).join('')}</div>` : '<div class="t-muted">אין היתרים רשומים</div>'}
+      </div>
+      <div class="sec"><h3>${ic('info', 'sm')}פרטים</h3><div class="kv2">
+        <div><div class="k">מספר אישי</div><div class="v"><span class="num">${esc(d.pn)}</span></div></div>
+        <div><div class="k">סוג שירות</div><div class="v">${esc(d.service || '—')}</div></div>
+        <div><div class="k">טלפון</div><div class="v"><span class="num">${esc(d.phone || '—')}</span></div></div>
+        <div><div class="k">זמינות</div><div class="v">${esc(d.availability || 'ביחידה')}</div></div>
+        <div><div class="k">דרגת רישיון אזרחי</div><div class="v">${esc(d.civilGrade || '—')}</div></div>
+        <div><div class="k">מספר רישיון צבאי</div><div class="v"><span class="num">${esc(d.milLicenseNo || '—')}</span></div></div>
+        ${d.notes ? `<div style="grid-column:1/-1"><div class="k">הערות</div><div class="v">${esc(d.notes)}</div></div>` : ''}
+      </div></div>
+      <div class="sec"><h3>${ic('history', 'sm')}יומן אירועי נהיגה ${isAdmin() ? `<button class="btn sm" data-act="add-event" data-id="${esc(d.id)}">${ic('plus', 'sm')}אירוע</button>` : ''}</h3>
+        ${ev.length ? `<div class="tl">${ev.map(e => `<div class="it"><span class="d">${fmtDate(e.date)}</span><span style="flex:1">${esc(e.text)}</span>${isAdmin() ? `<button class="btn ghost icon sm" data-act="del-event" data-id="${esc(d.id)}" data-ev="${esc(e.id)}" title="מחיקה">${ic('trash', 'sm')}</button>` : ''}</div>`).join('')}</div>` : '<div class="t-muted">לא נרשמו אירועים</div>'}
+      </div>
+      <div class="foot-note">עודכן ${fmtDateTime(d.updatedAt)}${d.updatedBy ? ' ע״י ' + esc(d.updatedBy) : ''}</div>
+    </div>`;
+}
+
+function vehicleDrawer(v) {
+  const st = vehicleStatus(v), s = vService(v), t = typeOf(v);
+  const open = openFaults(v).sort((a, b) => (a.severity === 'מונעת' ? 0 : 1) - (b.severity === 'מונעת' ? 0 : 1));
+  const hist = [
+    ...S.data.maint.filter(m => m.vehicleId === v.id).map(m => ({ at: m.date, txt: `${m.kind}${m.km ? ' · ' + fmtNum(m.km) + ' ק״מ' : ''}${m.note ? ' – ' + m.note : ''}`, ic: 'wrench' })),
+    ...S.data.faults.filter(f => f.vehicleId === v.id && f.status === 'סגורה').map(f => ({ at: String(f.closedAt || f.openedAt).slice(0, 10), txt: `תקלה נסגרה: ${f.text}${f.closeNote ? ' – ' + f.closeNote : ''}`, ic: 'check' })),
+  ].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  return `
+    <div class="dh"><div class="tt"><div class="av">${ic('truck', 'lg')}</div>
+      <div><h2><span class="vid">${esc(v.number)}</span> · ${esc(typeName(v.typeId))}</h2><div class="meta">${esc(unitName(v.unitId))}${v.location ? ' · ' + esc(v.location) : ''}</div><div style="margin-top:7px">${badge(st)}</div></div>
+      <button class="btn ghost icon x" data-act="close-drawer" aria-label="סגירה">${ic('x')}</button></div>
+      <div class="acts">
+        ${can('fault.open', v) ? `<button class="btn sm" data-act="open-fault" data-id="${esc(v.id)}">${ic('alert', 'sm')}פתיחת תקלה</button>` : ''}
+        ${can('vehicle.km', v) ? `<button class="btn sm" data-act="km" data-id="${esc(v.id)}">${ic('gauge', 'sm')}עדכון ק״מ</button>` : ''}
+        ${isAdmin() ? `<button class="btn sm" data-act="service" data-id="${esc(v.id)}">${ic('wrench', 'sm')}רישום טיפול</button>
+          <button class="btn sm" data-act="workshop" data-id="${esc(v.id)}">${v.inWorkshop ? 'החזרה מהסדנה' : 'העברה לסדנה'}</button>
+          <button class="btn sm" data-act="edit-vehicle" data-id="${esc(v.id)}">${ic('edit', 'sm')}עריכה</button>` : ''}
+      </div></div>
+    <div class="db">
+      ${st.reasons.length ? `<div class="reasons ${st.lv === 'ok' ? 'info' : st.lv}">${ic('alert')}<ul>${st.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>` : ''}
+      <div class="sec"><h3>${ic('wrench', 'sm')}טיפול תקופתי</h3><div class="kv2">
+        <div><div class="k">טיפול אחרון</div><div class="v">${fmtDate(v.lastServiceDate)}${v.lastServiceKm ? ` · <span class="num">${fmtNum(v.lastServiceKm)}</span> ק״מ` : ''}</div></div>
+        <div><div class="k">ק״מ נוכחי</div><div class="v"><span class="num">${fmtNum(v.km)}</span></div></div>
+        <div><div class="k">טיפול הבא לפי תאריך</div><div class="v">${s?.dueDate ? fmtDate(s.dueDate) + ' ' + daysPill(s.daysLeft, S.settings.serviceWarnDays, true) : '—'}</div></div>
+        <div><div class="k">טיפול הבא לפי ק״מ</div><div class="v">${s?.dueKm != null ? `<span class="num">${fmtNum(s.dueKm)}</span> ` + kmPill(s.kmLeft) : '—'}</div></div>
+        <div style="grid-column:1/-1"><div class="k">מרווח טיפולים לסוג</div><div class="v">${t ? `כל ${t.serviceDays || '—'} ימים או ${fmtNum(t.serviceKm)} ק״מ, המוקדם מביניהם` : '—'}</div></div>
+      </div></div>
+      <div class="sec"><h3>${ic('alert', 'sm')}תקלות פתוחות</h3>
+        ${open.length ? `<div class="list-ed">${open.map(f => `<div class="li"><span class="dot" style="background:var(--${f.severity === 'מונעת' ? 'bad' : 'warn'})"></span><div class="grow"><b>${esc(f.text)}</b><br><small>${esc(f.severity)} · ${esc(f.status)} · ${fmtDateTime(f.openedAt)} · ${esc(f.openedBy || '')}</small></div>
+          ${isAdmin() ? `${f.status === 'פתוחה' ? `<button class="btn sm" data-act="fault-progress" data-id="${esc(f.id)}">לטיפול</button>` : ''}<button class="btn sm" data-act="fault-close" data-id="${esc(f.id)}">סגירה</button>` : ''}</div>`).join('')}</div>` : '<div class="t-muted">אין תקלות פתוחות</div>'}
+      </div>
+      <div class="sec"><h3>${ic('history', 'sm')}היסטוריה</h3>
+        ${hist.length ? `<div class="tl">${hist.map(h => `<div class="it"><span class="d">${fmtDate(h.at)}</span><span style="flex:1">${esc(h.txt)}</span></div>`).join('')}</div>` : '<div class="t-muted">אין רישומים</div>'}
+      </div>
+      ${v.notes ? `<div class="sec"><h3>הערות</h3>${esc(v.notes)}</div>` : ''}
+      <div class="foot-note">עודכן ${fmtDateTime(v.updatedAt)}${v.updatedBy ? ' ע״י ' + esc(v.updatedBy) : ''}</div>
+    </div>`;
+}
+
+/* =========================================================
+   Actions, forms and global events
+   ========================================================= */
+const ACT = {
+  nav: d => { App.closeDrawer(); App.go(d.route); },
+  goto: d => {
+    App.closeDrawer();
+    const f = S.f[d.route];
+    if (f) {
+      f.unit = d.unit || ''; f.status = d.status || '';
+      if ('type' in f) f.type = d.type || '';
+      if ('q' in f) f.q = '';
+    }
+    App.go(d.route);
+  },
+  setf: d => { const [view, key] = d.k.split('.'); S.f[view][key] = d.v; App.renderView(true); },
+  'open-driver': d => App.openDrawer('driver', d.id),
+  'open-vehicle': d => App.openDrawer('vehicle', d.id),
+  'close-drawer': () => App.closeDrawer(),
+  theme: () => { applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'); App.renderChrome(); },
+  signin: () => FireBackend.signIn().catch(e => toast(e.message, 'bad')),
+  logout: () => FireBackend.signOut(),
+
+  /* drivers */
+  'add-driver': () => driverForm(),
+  'edit-driver': d => driverForm(Store.get('drivers', d.id)),
+  'driver-basic': d => driverBasicForm(Store.get('drivers', d.id)),
+  suspend: d => suspendForm(Store.get('drivers', d.id)),
+  unsuspend: d => {
+    const x = Store.get('drivers', d.id);
+    confirmBox('ביטול השעיה', `לבטל את ההשעיה של ${esc(x.name)}?`, () => {
+      Store.put('drivers', { ...x, suspended: { active: false, reason: '', until: '' } }, `בוטלה השעיה: ${x.name} (${x.pn})`);
+      toast('ההשעיה בוטלה');
+    }, 'ביטול השעיה', false);
+  },
+  'add-event': d => eventForm(Store.get('drivers', d.id)),
+  'del-event': d => {
+    const x = Store.get('drivers', d.id);
+    confirmBox('מחיקת אירוע', 'למחוק את האירוע מהיומן?', () => {
+      Store.put('drivers', { ...x, events: (x.events || []).filter(e => e.id !== d.ev) }, `נמחק אירוע נהיגה: ${x.name}`);
+    }, 'מחיקה');
+  },
+
+  /* vehicles & faults */
+  'add-vehicle': () => vehicleForm(),
+  'edit-vehicle': d => vehicleForm(Store.get('vehicles', d.id)),
+  service: d => serviceForm(Store.get('vehicles', d.id)),
+  km: d => kmForm(Store.get('vehicles', d.id)),
+  workshop: d => {
+    const v = Store.get('vehicles', d.id);
+    Store.put('vehicles', { ...v, inWorkshop: !v.inWorkshop }, `${v.inWorkshop ? 'הוחזר מהסדנה' : 'הועבר לסדנה'}: ${typeName(v.typeId)} ${v.number}`);
+    toast(v.inWorkshop ? 'הרכב הוחזר מהסדנה' : 'הרכב סומן בסדנה');
+  },
+  'open-fault': d => faultForm(d.id ? Store.get('vehicles', d.id) : null),
+  'fault-progress': d => {
+    const f = Store.get('faults', d.id);
+    Store.put('faults', { ...f, status: 'בטיפול' }, `תקלה הועברה לטיפול: ${f.text}`);
+    toast('התקלה הועברה לטיפול');
+  },
+  'fault-close': d => closeFaultForm(Store.get('faults', d.id)),
+
+  /* settings */
+  'unit-add': () => unitForm(),
+  'unit-edit': d => unitForm(Store.get('units', d.id)),
+  'unit-del': d => {
+    const u = Store.get('units', d.id);
+    const n = S.data.drivers.filter(x => x.unitId === u.id).length + S.data.vehicles.filter(x => x.unitId === u.id).length;
+    confirmBox('מחיקת פלוגה', `למחוק את ${esc(u.name)}?${n ? ` ${n} נהגים ורכבים ששויכו אליה יעברו ל"ללא שיוך".` : ''}`, () => {
+      S.data.drivers.filter(x => x.unitId === u.id).forEach(x => Store.put('drivers', { ...x, unitId: '' }));
+      S.data.vehicles.filter(x => x.unitId === u.id).forEach(x => Store.put('vehicles', { ...x, unitId: '' }));
+      Store.remove('units', u.id, `נמחקה פלוגה: ${u.name}`);
+    }, 'מחיקה');
+  },
+  'type-add': () => typeForm(),
+  'type-edit': d => typeForm(Store.get('types', d.id)),
+  'type-del': d => {
+    const t = Store.get('types', d.id);
+    const n = S.data.vehicles.filter(v => v.typeId === t.id).length;
+    if (n) { toast(`לא ניתן למחוק – ${n} רכבים משויכים לסוג הזה`, 'bad'); return; }
+    confirmBox('מחיקת סוג רכב', `למחוק את ${esc(t.name)}? ההיתרים לסוג הזה יוסרו מהנהגים.`, () => {
+      S.data.drivers.filter(x => x.permits?.[t.id]).forEach(x => { const p = { ...x.permits }; delete p[t.id]; Store.put('drivers', { ...x, permits: p }); });
+      Store.remove('types', t.id, `נמחק סוג רכב: ${t.name}`);
+    }, 'מחיקה');
+  },
+  'user-add': () => userForm(),
+  'user-edit': d => userForm(Store.get('users', d.id)),
+  'user-del': d => {
+    const u = Store.get('users', d.id);
+    confirmBox('הסרת משתמש', `להסיר את ההרשאה של ${esc(u.name || u.id)}?`, () => Store.remove('users', u.id, `הוסר משתמש: ${u.id}`), 'הסרה');
+  },
+
+  /* data */
+  template: () => IO.template(),
+  import: () => IO.importFile(),
+  export: () => IO.exportAll(),
+  backup: () => IO.backup(),
+  restore: () => IO.restore(),
+};
+
+function bindGlobalEvents() {
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-act]');
+    if (!el || !ACT[el.dataset.act]) return;
+    if (el.tagName === 'A') e.preventDefault();
+    ACT[el.dataset.act](el.dataset, el, e);
+  });
+  document.addEventListener('input', e => {
+    const el = e.target;
+    if (el.dataset.filter && el.tagName === 'INPUT') {
+      const [v, k] = el.dataset.filter.split('.'); S.f[v][k] = el.value;
+      App.renderView(false);
+    }
+    if (el.id === 'gsearch') globalSearch(el.value);
+  });
+  document.addEventListener('change', e => {
+    const el = e.target;
+    if (el.dataset.filter && el.tagName === 'SELECT') {
+      const [v, k] = el.dataset.filter.split('.'); S.f[v][k] = el.value;
+      App.renderView(true);
+    }
+    if (el.dataset.actChange === 'role') switchRole(el.value);
+  });
+  document.addEventListener('submit', e => {
+    const f = e.target;
+    if (f.dataset.form === 'general') {
+      e.preventDefault();
+      const g = getter(new FormData(f));
+      const num = (k, def) => { const n = parseInt(g(k), 10); return isNaN(n) ? def : n; };
+      Store.saveSettings({
+        battalion: g('battalion') || DEFAULT_SETTINGS.battalion, warnDays: num('warnDays', 30), refresherMonths: num('refresherMonths', 12),
+        serviceWarnDays: num('serviceWarnDays', 14), serviceWarnKm: num('serviceWarnKm', 500), trackMedical: g('trackMedical') === 'yes',
+      });
+      document.activeElement?.blur();
+      toast('ההגדרות נשמרו');
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { if ($('#modal').innerHTML) closeModal(); else if (S.drawer) App.closeDrawer(); else if ($('#sres')?.innerHTML) $('#sres').innerHTML = ''; }
+    if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName)) { e.preventDefault(); $('#gsearch')?.focus(); }
+  });
+  document.addEventListener('focusout', e => { if (e.target.id === 'gsearch') setTimeout(() => { if ($('#sres')) $('#sres').innerHTML = ''; }, 180); });
+}
+
+function switchRole(v) {
+  App.closeDrawer();
+  if (v === 'admin') S.user = { name: 'קצין רכב (הדגמה)', role: 'admin', unitId: '' };
+  else if (v === 'hq') S.user = { name: 'סמג״ד (הדגמה)', role: 'hq', unitId: '' };
+  else { const id = v.split(':')[1]; S.user = { name: 'מ״פ ' + unitName(id) + ' (הדגמה)', role: 'company', unitId: id }; }
+  for (const k of Object.keys(S.f)) if ('unit' in S.f[k]) S.f[k].unit = '';
+  App.go(S.route);
+  toast('תצוגה: ' + ROLE_LABEL[S.user.role]);
+}
+
+function globalSearch(q) {
+  const box = $('#sres'); q = q.trim().toLowerCase();
+  if (!q) { box.innerHTML = ''; return; }
+  const ds = scoped(S.data.drivers).filter(d => `${d.name} ${d.pn}`.toLowerCase().includes(q)).slice(0, 6);
+  const vs = scoped(S.data.vehicles).filter(v => `${v.number} ${typeName(v.typeId)}`.toLowerCase().includes(q)).slice(0, 6);
+  box.innerHTML = `<div class="sres">${!ds.length && !vs.length ? '<div class="empty">לא נמצאו תוצאות</div>' : ''}
+    ${ds.map(d => `<button data-act="open-driver" data-id="${esc(d.id)}"><div class="av" style="width:30px;height:30px;font-size:12px">${esc(initials(d.name))}</div><div style="flex:1"><b>${esc(d.name)}</b><br><small class="t-muted num">${esc(d.pn)}</small> <small class="t-muted">· ${esc(unitName(d.unitId))}</small></div>${badge(driverStatus(d))}</button>`).join('')}
+    ${vs.map(v => `<button data-act="open-vehicle" data-id="${esc(v.id)}"><div class="av" style="width:30px;height:30px">${ic('truck', 'sm')}</div><div style="flex:1"><b class="vid">${esc(v.number)}</b><br><small class="t-muted">${esc(typeName(v.typeId))} · ${esc(unitName(v.unitId))}</small></div>${badge(vehicleStatus(v))}</button>`).join('')}</div>`;
+}
+
+/* ---------- forms: drivers ---------- */
+function driverForm(d) {
+  const isNew = !d; d = d || { permits: {}, availability: 'ביחידה', service: 'מילואים', unitId: S.f.drivers.unit && S.f.drivers.unit !== '__none' ? S.f.drivers.unit : '' };
+  const types = typesSorted();
+  const permRows = types.map(t => {
+    const has = hasPermit(d, t.id);
+    return `<div class="perm ${has ? '' : 'off'}"><label style="display:flex;align-items:center;gap:9px;flex:1;cursor:pointer"><input type="checkbox" name="perm_${t.id}" ${has ? 'checked' : ''}><span>${esc(t.name)} ${t.grade ? `<small class="t-muted">(${esc(t.grade)})</small>` : ''}</span></label><input class="input" type="date" name="permd_${t.id}" value="${esc(d.permits?.[t.id] || '')}" title="תאריך ריענון אחרון"></div>`;
+  }).join('');
+  modal({
+    title: isNew ? 'נהג חדש' : 'עריכת נהג', size: 'lg', submit: isNew ? 'הוספת נהג' : 'שמירה',
+    foot: !isNew ? `<button type="button" class="btn danger start" id="delDriver">${ic('trash', 'sm')}מחיקה</button>` : '',
+    body: `<div class="form">
+      <h4>פרטים אישיים</h4>
+      ${fld('מספר אישי', 'pn', d.pn, { req: true, attrs: `inputmode="numeric" ${isNew ? '' : 'disabled'}`, hint: isNew ? '' : 'לא ניתן לשנות מספר אישי' })}
+      ${fld('שם מלא', 'name', d.name, { req: true })}
+      ${fld('דרגה', 'rank', d.rank, { opts: [['', 'בחר…'], ...RANKS] })}
+      ${fld('פלוגה', 'unitId', d.unitId, { opts: [['', 'ללא שיוך'], ...unitsSorted().map(u => [u.id, u.name])] })}
+      ${fld('טלפון', 'phone', d.phone, { type: 'tel', attrs: 'inputmode="tel"' })}
+      ${fld('סוג שירות', 'service', d.service, { opts: SERVICE })}
+      ${fld('זמינות', 'availability', d.availability, { opts: AVAIL })}
+      <h4>רישיונות וכשירות</h4>
+      ${fld('דרגת רישיון אזרחי', 'civilGrade', d.civilGrade, { opts: [['', 'בחר…'], ...GRADES] })}
+      ${fld('תוקף רישיון אזרחי', 'civilExp', d.civilExp, { type: 'date' })}
+      ${fld('מספר רישיון צבאי', 'milLicenseNo', d.milLicenseNo, { attrs: 'inputmode="numeric"' })}
+      ${fld('תוקף רישיון צבאי', 'milExp', d.milExp, { type: 'date' })}
+      ${fld('תוקף כשירות רפואית', 'medicalExp', d.medicalExp, { type: 'date' })}
+      ${fld('רישיון צבאי', 'hasMil', d.hasMil === true ? 'yes' : d.hasMil === false ? 'no' : '', { opts: [['', 'לא ידוע'], ['yes', 'יש'], ['no', 'אין']] })}
+      <h4>היתרים וריענון אחרון לכל סוג רכב <small style="font-weight:400">(ריענון תקף ${S.settings.refresherMonths} חודשים)</small></h4>
+      <div class="full">${types.length ? `<div class="perm-grid">${permRows}</div>` : '<div class="t-muted">הגדר סוגי רכב בהגדרות כדי לסמן היתרים</div>'}</div>
+      ${fld('הערות', 'notes', d.notes, { type: 'textarea', full: true })}
+    </div>`,
+    onMount: form => {
+      form.querySelectorAll('.perm input[type=checkbox]').forEach(cb => cb.onchange = () => {
+        const row = cb.closest('.perm'); row.classList.toggle('off', !cb.checked);
+        
+      });
+      form.querySelector('#delDriver')?.addEventListener('click', () => {
+        confirmBox('מחיקת נהג', `למחוק את ${esc(d.name)} (${esc(d.pn)}) לצמיתות?`, () => { App.closeDrawer(); Store.remove('drivers', d.id, `נמחק נהג: ${d.name} (${d.pn})`); toast('הנהג נמחק'); }, 'מחיקה');
+      });
+    },
+    onSubmit: (fd, form) => {
+      const g = getter(fd);
+      const pn = isNew ? g('pn') : d.pn;
+      let bad = false;
+      if (!/^\d{5,9}$/.test(pn)) { fieldErr(form, 'pn', 'מספר אישי צריך להכיל 5–9 ספרות'); bad = true; }
+      else if (isNew && Store.get('drivers', safeId(pn))) { fieldErr(form, 'pn', 'נהג עם המספר האישי הזה כבר קיים'); bad = true; }
+      if (!g('name')) { fieldErr(form, 'name', 'שדה חובה'); bad = true; }
+      if (bad) return false;
+      const permits = {};
+      types.forEach(t => { if (fd.get('perm_' + t.id)) permits[t.id] = g('permd_' + t.id); });
+      const obj = {
+        ...d, id: safeId(pn), pn, name: g('name'), rank: g('rank'), unitId: g('unitId'), phone: g('phone'), service: g('service'),
+        availability: g('availability'), civilGrade: g('civilGrade'), civilExp: g('civilExp'), milLicenseNo: g('milLicenseNo'),
+        milExp: g('milExp'), medicalExp: g('medicalExp'), hasMil: g('hasMil') === 'yes' ? true : g('hasMil') === 'no' ? false : null, permits, notes: g('notes'),
+        events: d.events || [], suspended: d.suspended || { active: false },
+      };
+      Store.put('drivers', obj, `${isNew ? 'נוסף' : 'עודכן'} נהג: ${obj.name} (${obj.pn})`);
+      toast(isNew ? 'הנהג נוסף' : 'השינויים נשמרו');
+      if (isNew) App.openDrawer('driver', obj.id);
+    },
+  });
+}
+function driverBasicForm(d) {
+  modal({
+    title: 'עדכון זמינות וטלפון', size: 'sm',
+    body: `<div class="form">${fld('זמינות', 'availability', d.availability, { opts: AVAIL, full: true })}${fld('טלפון', 'phone', d.phone, { type: 'tel', full: true })}</div>`,
+    onSubmit: fd => { const g = getter(fd); Store.put('drivers', { ...d, availability: g('availability'), phone: g('phone') }, `עודכנה זמינות: ${d.name}`); toast('עודכן'); },
+  });
+}
+function suspendForm(d) {
+  modal({
+    title: 'השעיית נהג – ' + d.name, size: 'sm', submit: 'השעיה', danger: true,
+    body: `<div class="form">${fld('סיבה', 'reason', '', { full: true, req: true, ph: 'למשל: אירוע נהיגה בבירור' })}${fld('עד תאריך (לא חובה)', 'until', '', { type: 'date', full: true })}</div>`,
+    onSubmit: (fd, form) => {
+      const g = getter(fd);
+      if (!g('reason')) { fieldErr(form, 'reason', 'יש לציין סיבה'); return false; }
+      Store.put('drivers', { ...d, suspended: { active: true, reason: g('reason'), until: g('until'), at: todayISO() } }, `הושעה נהג: ${d.name} – ${g('reason')}`);
+      toast('הנהג הושעה');
+    },
+  });
+}
+function eventForm(d) {
+  modal({
+    title: 'אירוע נהיגה – ' + d.name, size: 'sm',
+    body: `<div class="form">${fld('תאריך', 'date', todayISO(), { type: 'date', full: true })}${fld('תיאור', 'text', '', { type: 'textarea', full: true, req: true })}</div>`,
+    onSubmit: (fd, form) => {
+      const g = getter(fd);
+      if (!g('text')) { fieldErr(form, 'text', 'שדה חובה'); return false; }
+      Store.put('drivers', { ...d, events: [...(d.events || []), { id: uid(), date: g('date') || todayISO(), text: g('text') }] }, `נרשם אירוע נהיגה: ${d.name}`);
+      toast('האירוע נרשם');
+    },
+  });
+}
+
+/* ---------- forms: vehicles ---------- */
+function vehicleForm(v) {
+  const isNew = !v; v = v || { unitId: S.f.vehicles.unit && S.f.vehicles.unit !== '__none' ? S.f.vehicles.unit : '', typeId: S.f.vehicles.type || '' };
+  modal({
+    title: isNew ? 'רכב חדש' : 'עריכת רכב', submit: isNew ? 'הוספת רכב' : 'שמירה',
+    foot: !isNew ? `<button type="button" class="btn danger start" id="delVehicle">${ic('trash', 'sm')}מחיקה</button>` : '',
+    body: `<div class="form">
+      ${fld('מספר רכב', 'number', v.number, { req: true, attrs: isNew ? '' : 'disabled', hint: isNew ? '' : 'לא ניתן לשנות מספר רכב' })}
+      ${fld('סוג רכב', 'typeId', v.typeId, { req: true, opts: [['', 'בחר…'], ...typesSorted().map(t => [t.id, t.name])] })}
+      ${fld('פלוגה', 'unitId', v.unitId, { opts: [['', 'ללא שיוך'], ...unitsSorted().map(u => [u.id, u.name])] })}
+      ${fld('מיקום', 'location', v.location, { ph: 'חניון גדודי' })}
+      ${fld('ק״מ נוכחי', 'km', v.km, { type: 'number', attrs: 'min="0"' })}
+      <div></div>
+      ${fld('תאריך טיפול תקופתי אחרון', 'lastServiceDate', v.lastServiceDate, { type: 'date' })}
+      ${fld('ק״מ בטיפול האחרון', 'lastServiceKm', v.lastServiceKm, { type: 'number', attrs: 'min="0"' })}
+      ${fld('הערות', 'notes', v.notes, { type: 'textarea', full: true })}
+    </div>`,
+    onMount: form => form.querySelector('#delVehicle')?.addEventListener('click', () => {
+      confirmBox('מחיקת רכב', `למחוק את רכב ${esc(v.number)} ואת כל ההיסטוריה שלו?`, () => {
+        App.closeDrawer();
+        S.data.faults.filter(f => f.vehicleId === v.id).forEach(f => Store.remove('faults', f.id));
+        S.data.maint.filter(m => m.vehicleId === v.id).forEach(m => Store.remove('maint', m.id));
+        Store.remove('vehicles', v.id, `נמחק רכב: ${typeName(v.typeId)} ${v.number}`); toast('הרכב נמחק');
+      }, 'מחיקה');
+    }),
+    onSubmit: (fd, form) => {
+      const g = getter(fd); const number = isNew ? g('number') : v.number;
+      let bad = false;
+      if (!number) { fieldErr(form, 'number', 'שדה חובה'); bad = true; }
+      else if (isNew && Store.get('vehicles', safeId(number))) { fieldErr(form, 'number', 'רכב עם המספר הזה כבר קיים'); bad = true; }
+      if (!g('typeId')) { fieldErr(form, 'typeId', 'יש לבחור סוג רכב'); bad = true; }
+      if (bad) return false;
+      const n = k => g(k) === '' ? '' : Number(g(k));
+      const obj = { ...v, id: safeId(number), number, typeId: g('typeId'), unitId: g('unitId'), location: g('location'), km: n('km'), lastServiceDate: g('lastServiceDate'), lastServiceKm: n('lastServiceKm'), notes: g('notes'), inWorkshop: !!v.inWorkshop };
+      Store.put('vehicles', obj, `${isNew ? 'נוסף' : 'עודכן'} רכב: ${typeName(obj.typeId)} ${obj.number}`);
+      // keep unitId on related open faults in sync
+      S.data.faults.filter(f => f.vehicleId === obj.id && f.unitId !== obj.unitId).forEach(f => Store.put('faults', { ...f, unitId: obj.unitId }));
+      toast(isNew ? 'הרכב נוסף' : 'השינויים נשמרו');
+      if (isNew) App.openDrawer('vehicle', obj.id);
+    },
+  });
+}
+function serviceForm(v) {
+  modal({
+    title: `רישום טיפול – ${typeName(v.typeId)} ${v.number}`, size: 'sm',
+    body: `<div class="form">
+      ${fld('סוג', 'kind', 'טיפול תקופתי', { opts: ['טיפול תקופתי', 'תיקון', 'בדיקת כשירות', 'אחר'], full: true })}
+      ${fld('תאריך', 'date', todayISO(), { type: 'date' })}${fld('ק״מ', 'km', v.km, { type: 'number', attrs: 'min="0"' })}
+      ${fld('פירוט', 'note', '', { type: 'textarea', full: true })}
+      <div class="full hint t-muted" style="font-size:12.5px">טיפול תקופתי מאפס את מונה הטיפול הבא של הרכב.</div></div>`,
+    onSubmit: fd => {
+      const g = getter(fd); const km = g('km') === '' ? '' : Number(g('km'));
+      Store.put('maint', { vehicleId: v.id, unitId: v.unitId, date: g('date') || todayISO(), km, kind: g('kind'), note: g('note') });
+      const upd = { ...v };
+      if (g('kind') === 'טיפול תקופתי') { upd.lastServiceDate = g('date') || todayISO(); upd.lastServiceKm = km; }
+      if (km !== '' && (v.km === '' || v.km == null || km > Number(v.km))) upd.km = km;
+      Store.put('vehicles', upd, `נרשם ${g('kind')}: ${typeName(v.typeId)} ${v.number}`);
+      toast('הטיפול נרשם');
+    },
+  });
+}
+function kmForm(v) {
+  modal({
+    title: `עדכון ק״מ – ${v.number}`, size: 'sm',
+    body: `<div class="form">${fld('ק״מ נוכחי', 'km', v.km, { type: 'number', full: true, req: true, attrs: 'min="0" inputmode="numeric"', hint: v.km ? `ערך קודם: ${fmtNum(v.km)}` : '' })}</div>`,
+    onSubmit: (fd, form) => {
+      const k = Number(getter(fd)('km'));
+      if (!k && k !== 0) { fieldErr(form, 'km', 'יש להזין מספר'); return false; }
+      if (v.km && k < Number(v.km)) { fieldErr(form, 'km', 'הערך נמוך מהק״מ הקודם'); return false; }
+      Store.put('vehicles', { ...v, km: k }, `עודכן ק״מ: ${v.number} – ${fmtNum(k)}`);
+      toast('הק״מ עודכן');
+    },
+  });
+}
+function faultForm(v) {
+  const vs = scoped(S.data.vehicles).filter(x => can('fault.open', x)).sort((a, b) => typeName(a.typeId).localeCompare(typeName(b.typeId), 'he'));
+  modal({
+    title: v ? `פתיחת תקלה – ${typeName(v.typeId)} ${v.number}` : 'פתיחת תקלה', size: 'sm', submit: 'פתיחת תקלה',
+    body: `<div class="form">
+      ${v ? '' : fld('רכב', 'vehicleId', '', { full: true, req: true, opts: [['', 'בחר רכב…'], ...vs.map(x => [x.id, `${typeName(x.typeId)} ${x.number} · ${unitName(x.unitId)}`])] })}
+      ${fld('תיאור התקלה', 'text', '', { type: 'textarea', full: true, req: true, ph: 'מה קרה? איפה בדיוק?' })}
+      <div class="fld full"><label>חומרה</label><div class="seg" style="align-self:flex-start">
+        <label style="display:contents"><input type="radio" name="severity" value="לא מונעת" checked hidden><button type="button" class="on" data-sev="לא מונעת">לא מונעת נסיעה</button></label>
+        <label style="display:contents"><input type="radio" name="severity" value="מונעת" hidden><button type="button" data-sev="מונעת">מונעת נסיעה</button></label>
+      </div><div class="hint">תקלה מונעת משביתה את הרכב מיד.</div></div></div>`,
+    onMount: form => form.querySelectorAll('[data-sev]').forEach(b => b.onclick = () => {
+      form.querySelectorAll('[data-sev]').forEach(x => x.classList.toggle('on', x === b));
+      form.querySelector(`input[value="${b.dataset.sev}"]`).checked = true;
+    }),
+    onSubmit: (fd, form) => {
+      const g = getter(fd); const vid = v ? v.id : g('vehicleId');
+      let bad = false;
+      if (!vid) { fieldErr(form, 'vehicleId', 'יש לבחור רכב'); bad = true; }
+      if (!g('text')) { fieldErr(form, 'text', 'יש לתאר את התקלה'); bad = true; }
+      if (bad) return false;
+      const veh = Store.get('vehicles', vid);
+      Store.put('faults', { vehicleId: vid, unitId: veh.unitId, text: g('text'), severity: g('severity') || 'לא מונעת', status: 'פתוחה', openedAt: new Date().toISOString(), openedBy: S.user.name, closedAt: '', closeNote: '' },
+        `נפתחה תקלה (${g('severity')}): ${typeName(veh.typeId)} ${veh.number} – ${g('text')}`);
+      toast('התקלה נפתחה');
+    },
+  });
+}
+function closeFaultForm(f) {
+  modal({
+    title: 'סגירת תקלה', size: 'sm', submit: 'סגירת תקלה',
+    body: `<p style="margin:0 0 12px"><b>${esc(f.text)}</b></p><div class="form">${fld('מה בוצע', 'note', '', { type: 'textarea', full: true, ph: 'למשל: הוחלפה נורה' })}</div>`,
+    onSubmit: fd => {
+      Store.put('faults', { ...f, status: 'סגורה', closedAt: new Date().toISOString(), closeNote: getter(fd)('note') }, `נסגרה תקלה: ${f.text}`);
+      toast('התקלה נסגרה');
+    },
+  });
+}
+
+/* ---------- forms: settings ---------- */
+function unitForm(u) {
+  modal({
+    title: u ? 'עריכת פלוגה' : 'פלוגה חדשה', size: 'sm',
+    body: `<div class="form">${fld('שם', 'name', u?.name, { full: true, req: true, ph: 'סוללה א׳' })}${fld('סדר תצוגה', 'order', u?.order ?? S.data.units.length + 1, { type: 'number', full: true })}</div>`,
+    onSubmit: (fd, form) => {
+      const g = getter(fd);
+      if (!g('name')) { fieldErr(form, 'name', 'שדה חובה'); return false; }
+      if (S.data.units.some(x => x.name === g('name') && x.id !== u?.id)) { fieldErr(form, 'name', 'כבר קיימת פלוגה בשם הזה'); return false; }
+      Store.put('units', { ...(u || {}), name: g('name'), order: Number(g('order')) || 99 }, `${u ? 'עודכנה' : 'נוספה'} פלוגה: ${g('name')}`);
+    },
+  });
+}
+function typeForm(t) {
+  modal({
+    title: t ? 'עריכת סוג רכב' : 'סוג רכב חדש', size: 'sm',
+    body: `<div class="form">
+      ${fld('שם', 'name', t?.name, { full: true, req: true })}
+      ${fld('רישיון אזרחי נדרש', 'grade', t?.grade || '', { opts: [['', 'ללא בדיקה'], ...GRADES], full: true })}
+      ${fld('טיפול כל (ימים)', 'serviceDays', t?.serviceDays ?? 180, { type: 'number', attrs: 'min="0"' })}
+      ${fld('טיפול כל (ק״מ)', 'serviceKm', t?.serviceKm ?? 5000, { type: 'number', attrs: 'min="0" step="500"' })}</div>`,
+    onSubmit: (fd, form) => {
+      const g = getter(fd);
+      if (!g('name')) { fieldErr(form, 'name', 'שדה חובה'); return false; }
+      Store.put('types', { ...(t || {}), name: g('name'), grade: g('grade'), serviceDays: Number(g('serviceDays')) || 0, serviceKm: Number(g('serviceKm')) || 0 }, `${t ? 'עודכן' : 'נוסף'} סוג רכב: ${g('name')}`);
+    },
+  });
+}
+function userForm(u) {
+  modal({
+    title: u ? 'עריכת משתמש' : 'משתמש חדש', size: 'sm',
+    body: `<div class="form">
+      ${fld('כתובת Gmail', 'email', u?.id, { full: true, req: true, type: 'email', attrs: u ? 'disabled' : '', hint: 'החשבון שאיתו המשתמש ייכנס' })}
+      ${fld('שם ותפקיד', 'name', u?.name, { full: true, ph: 'רס״ן ישראלי – סמג״ד' })}
+      ${fld('הרשאה', 'role', u?.role || 'company', { full: true, opts: [['admin', 'קצין רכב – ניהול מלא'], ['company', 'מפקד פלוגה – הפלוגה שלו'], ['hq', 'מפקדת גדוד – צפייה בלבד']] })}
+      ${fld('פלוגה (למפקד פלוגה)', 'unitId', u?.unitId, { full: true, opts: [['', '—'], ...unitsSorted().map(x => [x.id, x.name])] })}</div>`,
+    onSubmit: (fd, form) => {
+      const g = getter(fd); const email = (u ? u.id : g('email')).toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { fieldErr(form, 'email', 'כתובת לא תקינה'); return false; }
+      if (g('role') === 'company' && !g('unitId')) { fieldErr(form, 'unitId', 'יש לבחור פלוגה'); return false; }
+      Store.put('users', { ...(u || {}), id: email, name: g('name'), role: g('role'), unitId: g('role') === 'company' ? g('unitId') : '' }, `${u ? 'עודכן' : 'נוסף'} משתמש: ${email} (${ROLE_LABEL[g('role')]})`);
+      toast('המשתמש נשמר');
+    },
+  });
+}
+
+/* =========================================================
+   Excel import / export, backup / restore
+   ========================================================= */
+const XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+const norm = s => String(s ?? '').replace(/["״׳'\s.:\-–]/g, '');
+/* recognised column names (first = the one used in the template) */
+const DKEYS = {
+  pn: ['מספר אישי', 'מס אישי', 'מ"א', 'מס׳ אישי'], name: ['שם מלא', 'שם', 'שם ומשפחה'], rank: ['דרגה'],
+  unit: ['פלוגה', 'סוללה', 'יחידה', 'מסגרת'], phone: ['טלפון', 'נייד', 'פלאפון'], service: ['סוג שירות'], availability: ['זמינות'],
+  civilGrade: ['דרגת רישיון אזרחי', 'דרגת רישיון', 'סוג רישיון'], civilExp: ['תוקף רישיון אזרחי', 'תוקף רישיון'],
+  milHas: ['רישיון צבאי'], milLicenseNo: ['מספר רישיון צבאי'], milExp: ['תוקף רישיון צבאי'],
+  medicalExp: ['תוקף כשירות רפואית', 'כשירות רפואית', 'תוקף רפואי'], refAll: ['תאריך ריענון אחרון', 'ריענון אחרון', 'תאריך ריענון'],
+  permits: ['היתרים', 'היתרי רכב'], notes: ['הערות'],
+};
+const VKEYS = {
+  number: ['מספר רכב', 'מס רכב', 'מספר צבאי', 'צ'], type: ['סוג רכב', 'סוג'], unit: ['פלוגה', 'סוללה', 'יחידה', 'מסגרת'],
+  km: ['ק״מ', 'ק"מ', 'קילומטראז'], lastServiceDate: ['תאריך טיפול אחרון', 'טיפול אחרון'], lastServiceKm: ['ק״מ בטיפול אחרון'],
+  location: ['מיקום'], notes: ['הערות'],
+};
+const keyOf = (map, h) => { const n = norm(h); if (!n) return null; for (const [k, names] of Object.entries(map)) if (names.some(x => norm(x) === n)) return k; return null; };
+const blank = v => v === '' || v == null || v === 0 || String(v).trim() === '0';
+const yesNo = v => { const s = norm(v).toLowerCase(); if (['יש', 'כן', 'v', 'x', 'yes', '1', 'true'].includes(s)) return true; if (['אין', 'לא', 'no', 'false'].includes(s)) return false; return null; };
+
+const IO = {
+  async lib() {
+    if (window.XLSX) return window.XLSX;
+    try { await loadScript('xlsx.full.min.js'); } catch (e) { await loadScript(XLSX_URL); }
+    return window.XLSX;
+  },
+  wb(X, sheets) {
+    const wb = X.utils.book_new();
+    wb.Workbook = { Views: [{ RTL: true }] };
+    for (const [name, aoa] of sheets) {
+      const ws = X.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = aoa[0].map((h, i) => ({ wch: Math.max(10, ...aoa.slice(0, 50).map(r => String(r[i] ?? '').length + 2)) }));
+      X.utils.book_append_sheet(wb, ws, name);
+    }
+    return wb;
+  },
+  save(X, wb, name) { download(name, new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); },
+  dHead() { return ['מספר אישי', 'שם מלא', 'דרגה', 'פלוגה', 'טלפון', 'סוג שירות', 'זמינות', 'דרגת רישיון אזרחי', 'תוקף רישיון אזרחי', 'רישיון צבאי', 'מספר רישיון צבאי', 'תוקף רישיון צבאי', 'תוקף כשירות רפואית', ...typesSorted().map(t => 'ריענון: ' + t.name), 'הערות']; },
+  vHead() { return ['מספר רכב', 'סוג רכב', 'פלוגה', 'ק״מ', 'תאריך טיפול אחרון', 'ק״מ בטיפול אחרון', 'מיקום', 'הערות']; },
+
+  async template() {
+    const X = await this.lib().catch(() => null); if (!X) return toast('לא ניתן לטעון את רכיב האקסל – בדוק חיבור לאינטרנט', 'bad');
+    const tn = typesSorted(), un = unitsSorted().map(u => u.name);
+    const ex = d => fmtDate(addDays(todayISO(), d)).replace(/\/(\d\d)$/, '/20$1');
+    const row = ['1234567', 'ישראל ישראלי', 'סמ״ר', un[0] || 'סוללה א׳', '050-1234567', 'מילואים', 'ביחידה', 'C1', ex(900), 'יש', '123456', ex(400), '', ...tn.map((t, i) => i === 0 ? ex(-60) : i === 1 ? 'X' : ''), ''];
+    this.save(X, this.wb(X, [
+      ['נהגים', [this.dHead(), row]],
+      ['רכבים', [this.vHead(), ['654321', tn[0]?.name || 'האמר', un[0] || 'סוללה א׳', 45200, ex(-40), 43800, 'חניון גדודי', '']]],
+      ['הסבר', [['הנחיות'], ['תאריכים בפורמט יום/חודש/שנה, למשל 15/03/2027'], ['עמודות "ריענון: <סוג רכב>" – תאריך הריענון האחרון על הסוג. X = מורשה לסוג אבל עוד לא עבר ריענון. ריק = אין היתר'], ['רישיון צבאי: יש / אין'], ['פלוגה שלא קיימת במערכת תיווצר אוטומטית; שורה בלי פלוגה תסומן "ללא שיוך"'], ['נהג קיים (לפי מספר אישי) יעודכן – תאים ריקים לא ימחקו נתון קיים'], ['אפשר לייבא גם את הקובץ הישן בפורמט "צריך רענון על / עבר רענון על"']]],
+    ]), 'fleet_template.xlsx');
+  },
+
+  async exportAll() {
+    const X = await this.lib().catch(() => null); if (!X) return toast('לא ניתן לטעון את רכיב האקסל', 'bad');
+    const D = scoped(S.data.drivers).sort(byName), V = scoped(S.data.vehicles), T = typesSorted();
+    const mil = d => d.hasMil === true ? 'יש' : d.hasMil === false ? 'אין' : '';
+    const dRows = D.map(d => { const st = driverStatus(d); return [d.pn, d.name, d.rank, unitName(d.unitId), d.phone, d.service, d.availability, d.civilGrade, fmtDate(d.civilExp).replace('—', ''), mil(d), d.milLicenseNo, fmtDate(d.milExp).replace('—', ''), fmtDate(d.medicalExp).replace('—', ''), ...T.map(t => hasPermit(d, t.id) ? (d.permits[t.id] ? fmtDate(d.permits[t.id]) : 'X') : ''), d.notes, st.label, st.reasons.join('; ')]; });
+    const vRows = V.map(v => { const st = vehicleStatus(v), s = vService(v); return [v.number, typeName(v.typeId), unitName(v.unitId), v.km, fmtDate(v.lastServiceDate).replace('—', ''), v.lastServiceKm, v.location, v.notes, s?.dueDate ? fmtDate(s.dueDate) : '', s?.dueKm ?? '', st.label, st.reasons.join('; ')]; });
+    const fRows = scoped(S.data.faults).map(f => { const v = Store.get('vehicles', f.vehicleId); return [v?.number, typeName(v?.typeId), unitName(f.unitId), f.text, f.severity, f.status, fmtDateTime(f.openedAt), f.openedBy, fmtDateTime(f.closedAt), f.closeNote]; });
+    this.save(X, this.wb(X, [
+      ['נהגים', [[...this.dHead(), 'סטטוס', 'פירוט'], ...dRows]],
+      ['רכבים', [[...this.vHead(), 'טיפול הבא (תאריך)', 'טיפול הבא (ק״מ)', 'סטטוס', 'פירוט'], ...vRows]],
+      ['תקלות', [['מספר רכב', 'סוג', 'פלוגה', 'תקלה', 'חומרה', 'סטטוס', 'נפתחה', 'ע״י', 'נסגרה', 'מה בוצע'], ...fRows]],
+    ]), `fleet_${todayISO()}.xlsx`);
+    toast('הקובץ ירד');
+  },
+
+  async importFile() {
+    if (!isAdmin()) return;
+    const file = await pickFile('.xlsx,.xls,.csv'); if (!file) return;
+    const X = await this.lib().catch(() => null); if (!X) return toast('לא ניתן לטעון את רכיב האקסל', 'bad');
+    let wb;
+    try { wb = X.read(await file.arrayBuffer(), { type: 'array' }); }
+    catch (e) { return toast('הקובץ לא נקרא: ' + e.message, 'bad'); }
+    const plan = this.plan(X, wb);
+    if (!plan.drivers.length && !plan.vehicles.length) return toast('לא נמצאו בקובץ עמודות "מספר אישי" או "מספר רכב"', 'bad');
+    const nNewD = plan.drivers.filter(x => x.isNew).length, nNewV = plan.vehicles.filter(x => x.isNew).length;
+    modal({
+      title: 'יבוא מאקסל – ' + file.name, submit: 'יבוא', size: 'lg',
+      body: `<div class="kpis" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">
+          <div class="card kpi" style="cursor:default"><div class="lbl">${ic('users')}נהגים</div><div class="val">${plan.drivers.length}</div><div class="foot">${nNewD} חדשים · ${plan.drivers.length - nNewD} יעודכנו</div></div>
+          <div class="card kpi" style="cursor:default"><div class="lbl">${ic('truck')}רכבים</div><div class="val">${plan.vehicles.length}</div><div class="foot">${nNewV} חדשים · ${plan.vehicles.length - nNewV} יעודכנו</div></div></div>
+        ${plan.cols.length ? `<div class="reasons info" style="margin-bottom:10px">${ic('info')}<span>עמודות שזוהו: ${plan.cols.map(esc).join(' · ')}</span></div>` : ''}
+        ${plan.newUnits.length ? `<div class="reasons info" style="margin-bottom:10px">${ic('info')}<span>פלוגות חדשות שייווצרו: <b>${plan.newUnits.map(esc).join(', ')}</b></span></div>` : ''}
+        ${plan.newTypes.length ? `<div class="reasons info" style="margin-bottom:10px">${ic('info')}<span>סוגי רכב חדשים שייווצרו: <b>${plan.newTypes.map(esc).join(', ')}</b> (אפשר לעדכן להם מרווח טיפולים בהגדרות)</span></div>` : ''}
+        ${plan.skipped.length ? `<div class="reasons warn">${ic('alert')}<div><b>${plan.skipped.length} שורות ידולגו:</b><ul style="margin-top:4px">${plan.skipped.slice(0, 8).map(s => `<li style="font-weight:400">${esc(s)}</li>`).join('')}</ul>${plan.skipped.length > 8 ? `<small>ועוד ${plan.skipped.length - 8}</small>` : ''}</div></div>` : ''}
+        <p class="t-muted" style="margin:12px 0 0;font-size:13px">רשומות קיימות יתעדכנו לפי מספר אישי / מספר רכב. תאים ריקים בקובץ לא ימחקו נתונים קיימים.</p>`,
+      onSubmit: () => { this.apply(plan); },
+    });
+  },
+
+  /* reads any sheet whose header (first 10 rows) has a personal-number or vehicle-number column.
+     supports a 2-row header: a group row ("עבר רענון על" / "צריך רענון על") above vehicle-type names. */
+  plan(X, wb) {
+    const out = { drivers: [], vehicles: [], newUnits: [], newTypes: [], skipped: [], cols: [], _units: [], _types: [] };
+    const unitByName = new Map(S.data.units.map(u => [norm(u.name), u.id]));
+    const typeByName = new Map(S.data.types.map(t => [norm(t.name), t.id]));
+    const unitId = name => {
+      const k = norm(name); if (unitByName.has(k)) return unitByName.get(k);
+      const id = 'u' + uid(); unitByName.set(k, id); out.newUnits.push(name); out._units.push({ id, name, order: S.data.units.length + out.newUnits.length });
+      return id;
+    };
+    const typeId = name => {
+      const k = norm(name); if (typeByName.has(k)) return typeByName.get(k);
+      const id = 't' + uid(); typeByName.set(k, id); out.newTypes.push(name); out._types.push({ id, name, grade: '', serviceDays: 180, serviceKm: 5000 });
+      return id;
+    };
+    const str = v => String(v ?? '').trim();
+    const num = v => { const n = Number(String(v).replace(/[^\d.]/g, '')); return str(v) === '' || isNaN(n) ? '' : n; };
+    const seenD = new Map();
+    for (const sn of wb.SheetNames) {
+      const A = X.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: '', raw: true });
+      let h = -1, kind = null;
+      for (let i = 0; i < Math.min(10, A.length) && h < 0; i++) {
+        if (A[i].some(c => keyOf(DKEYS, c) === 'pn')) { h = i; kind = 'd'; }
+        else if (A[i].some(c => keyOf(VKEYS, c) === 'number')) { h = i; kind = 'v'; }
+      }
+      if (h < 0) continue;
+      const top = A[h], nxt = A[h + 1] || [];
+      const isSub = blank(nxt[0]) && nxt.filter(x => typeof x === 'string' && x.trim()).length >= 2;
+      const width = Math.max(top.length, isSub ? nxt.length : 0);
+      const cols = []; let carry = '';
+      for (let c = 0; c < width; c++) {
+        const t = str(top[c]); if (t) carry = t;
+        const sub = isSub ? str(nxt[c]) : '';
+        const head = t || (sub ? carry : '');
+        let cl = null;
+        if (kind === 'v') { const k = keyOf(VKEYS, head); if (k) cl = { f: k }; }
+        else if (sub) {
+          if (/צריך|היתר|מורשה/.test(head)) cl = { perm: sub };
+          else if (/רענון|ריענון|עבר|בוצע/.test(head)) cl = { ref: sub };
+        }
+        if (!cl && kind === 'd') {
+          const k = keyOf(DKEYS, head);
+          if (k) cl = { f: k };
+          else { const m = head.match(/^(?:ריענון|רענון)\s*[:\-–]?\s*(.+)$/); if (m) cl = { ref: m[1].trim() }; }
+        }
+        cols.push(cl);
+        if (cl) out.cols.push(cl.f ? head : cl.ref ? 'ריענון ' + cl.ref : 'היתר ' + cl.perm);
+      }
+      const rows = A.slice(h + (isSub ? 2 : 1));
+      rows.forEach((r, i) => {
+        const line = `${sn} שורה ${h + (isSub ? 3 : 2) + i}`;
+        const rec = {}; const permits = {}; let refAll = '';
+        cols.forEach((cl, c) => {
+          if (!cl) return; const v = r[c];
+          if (cl.f) rec[cl.f] = v;
+          else if (cl.ref) { if (!blank(v)) { const d = toISO(v); const id = typeId(cl.ref); if (d) permits[id] = d; else if (!(id in permits)) permits[id] = ''; } }
+          else if (cl.perm) { if (!blank(v)) { const id = typeId(cl.perm); if (!(id in permits)) permits[id] = ''; } }
+        });
+        if (kind === 'd') {
+          const pn = str(rec.pn).replace(/\.0+$/, '').replace(/\D/g, '');
+          if (!pn) return;
+          if (pn.length < 5 || pn.length > 9) { out.skipped.push(`${line}: מספר אישי לא תקין (${str(rec.pn)})`); return; }
+          const exist = Store.get('drivers', safeId(pn)) || seenD.get(pn);
+          const name = str(rec.name);
+          if (!exist && !name) { out.skipped.push(`${line}: חסר שם לנהג חדש`); return; }
+          str(rec.permits).split(/[,;\/]+/).map(s => s.trim()).filter(Boolean).forEach(n => { const id = typeId(n); if (!(id in permits)) permits[id] = ''; });
+          if (!blank(rec.refAll)) refAll = toISO(rec.refAll);
+          if (refAll) for (const k of Object.keys(permits)) if (!permits[k]) permits[k] = refAll;
+          let hasMil = null, milExp = blank(rec.milExp) ? '' : toISO(rec.milExp);
+          if (!blank(rec.milHas)) { const d = toISO(rec.milHas); if (d) { milExp = milExp || d; hasMil = true; } else hasMil = yesNo(rec.milHas); }
+          const grade = str(rec.civilGrade).toUpperCase().replace(/\s/g, '').replace(/^CE$/, 'C+E');
+          const unit = blank(rec.unit) ? null : unitId(str(rec.unit));
+          const dd = {
+            isNew: !exist, pn, name, rank: str(rec.rank), unitId: unit, phone: str(rec.phone), service: str(rec.service), availability: str(rec.availability),
+            civilGrade: GRADES.includes(grade) ? grade : '', civilExp: blank(rec.civilExp) ? '' : toISO(rec.civilExp), hasMil, milLicenseNo: str(rec.milLicenseNo).replace(/\.0+$/, ''),
+            milExp, medicalExp: blank(rec.medicalExp) ? '' : toISO(rec.medicalExp), permits, notes: str(rec.notes),
+          };
+          seenD.set(pn, dd); out.drivers.push(dd);
+        } else {
+          const number = str(rec.number).replace(/\.0+$/, '');
+          if (!number) return;
+          const exist = Store.get('vehicles', safeId(number));
+          const tname = str(rec.type);
+          if (!exist && !tname) { out.skipped.push(`${line}: חסר סוג רכב לרכב ${number}`); return; }
+          out.vehicles.push({
+            isNew: !exist, number, typeId: tname ? typeId(tname) : '', unitId: blank(rec.unit) ? null : unitId(str(rec.unit)),
+            km: num(rec.km), lastServiceDate: blank(rec.lastServiceDate) ? '' : toISO(rec.lastServiceDate), lastServiceKm: num(rec.lastServiceKm),
+            location: str(rec.location), notes: str(rec.notes),
+          });
+        }
+      });
+    }
+    out.cols = [...new Set(out.cols)];
+    return out;
+  },
+
+  apply(p) {
+    p._units.forEach(u => Store.put('units', u));
+    p._types.forEach(t => Store.put('types', t));
+    const merge = (base, inc) => { const o = { ...base }; for (const [k, v] of Object.entries(inc)) if (!['isNew', 'permits', 'unitId'].includes(k) && v !== '' && v != null) o[k] = v; return o; };
+    for (const d of p.drivers) {
+      const id = safeId(d.pn); const ex = Store.get('drivers', id);
+      const base = ex || { id, pn: d.pn, unitId: '', availability: 'ביחידה', permits: {}, events: [], suspended: { active: false } };
+      const o = merge(base, d);
+      o.permits = { ...(base.permits || {}) };
+      for (const [t, dt] of Object.entries(d.permits)) if (!(t in o.permits) || (dt && (!o.permits[t] || dt > o.permits[t]))) o.permits[t] = dt;
+      o.unitId = d.unitId === null ? (base.unitId || '') : d.unitId;
+      Store.put('drivers', o);
+    }
+    for (const v of p.vehicles) {
+      const id = safeId(v.number); const ex = Store.get('vehicles', id);
+      const base = ex || { id, number: v.number, unitId: '', inWorkshop: false };
+      const o = merge(base, v);
+      o.unitId = v.unitId === null ? (base.unitId || '') : v.unitId;
+      Store.put('vehicles', o);
+    }
+    Store.log(`יבוא מאקסל: ${p.drivers.length} נהגים, ${p.vehicles.length} רכבים`);
+    toast(`יובאו ${p.drivers.length} נהגים ו-${p.vehicles.length} רכבים`);
+  },
+
+  backup() {
+    const data = { app: 'gdud-fleet', version: 1, at: new Date().toISOString(), settings: S.settings, data: Object.fromEntries(COLS.filter(c => c !== 'audit').map(c => [c, S.data[c]])) };
+    download(`fleet_backup_${todayISO()}.json`, new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+    toast('הגיבוי ירד');
+  },
+  async restore() {
+    const file = await pickFile('.json'); if (!file) return;
+    let j; try { j = JSON.parse(await file.text()); } catch (e) { return toast('קובץ גיבוי לא תקין', 'bad'); }
+    if (j.app !== 'gdud-fleet' || !j.data) return toast('זה לא קובץ גיבוי של המערכת', 'bad');
+    const n = (j.data.drivers || []).length, m = (j.data.vehicles || []).length;
+    confirmBox('שחזור מגיבוי', `לשחזר גיבוי מ-${fmtDateTime(j.at)} (${n} נהגים, ${m} רכבים)? רשומות עם אותו מזהה יוחלפו.`, () => {
+      for (const c of COLS) for (const o of (j.data[c] || [])) Store.put(c, o);
+      if (j.settings) Store.saveSettings(j.settings);
+      Store.log('בוצע שחזור מגיבוי'); toast('הגיבוי שוחזר');
+    }, 'שחזור');
+  },
+};
+
+function toISO(v) {
+  if (v === '' || v == null) return '';
+  if (v instanceof Date) return iso(v);
+  if (typeof v === 'number') {
+    if (v < 1000) return '';
+    const d = new Date(Math.round((v - 25569) * 864e5));
+    return iso(new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+  if (m) { let y = +m[3]; if (y < 100) y += 2000; const d = new Date(y, +m[2] - 1, +m[1]); return isNaN(d) ? '' : iso(d); }
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return iso(new Date(+m[1], +m[2] - 1, +m[3]));
+  return '';
+}
+
+App.start();
+if ('serviceWorker' in navigator && location.protocol === 'https:' && window.top === window.self) {
+  navigator.serviceWorker.register('sw.js').catch(function () {});
+}
+</script>
+</body>
+</html>
