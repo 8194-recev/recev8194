@@ -346,6 +346,16 @@ details.hist summary{cursor:pointer;color:var(--muted);font-size:13px;font-weigh
   .doc .kv{width:100%}
 }
 
+/* ---------- inline add ---------- */
+.addbox{margin-top:8px;border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;grid-column:1/-1;animation:fade .15s}
+.addbox .ab-t{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px;color:var(--accent)}
+.addbox .ab-f{display:flex;gap:8px;flex-wrap:wrap}
+.addbox .ab-f>*{flex:1;min-width:140px;background:var(--surface)}
+.addbox .ab-e{color:var(--bad);font-size:12.5px}.addbox .ab-e:empty{display:none}
+.addbox .ab-b{display:flex;gap:8px}
+.tchk.addchip{border-style:dashed;color:var(--accent);justify-content:center;gap:6px;font:inherit;background:none}
+.tchk.addchip span{flex:none;font-weight:600}
+.tchk.addchip:hover{background:var(--accent-soft)}
 /* ---------- tasks ---------- */
 .tasks{display:flex;flex-direction:column;gap:8px}
 .tcard{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;flex-wrap:wrap}
@@ -911,9 +921,9 @@ const opt = (v, l, sel) => `<option value="${esc(v)}" ${String(v) === String(sel
 const unitOptions = (sel, withAll = true) => (withAll ? opt('', 'כל הסוללות', sel) : '') + unitsSorted().map(u => opt(u.id, u.name, sel)).join('') + opt('__none', 'ללא שיוך', sel);
 
 function fld(label, name, val = '', o = {}) {
-  const { type = 'text', req, hint, full, opts, attrs = '', ph = '' } = o;
+  const { type = 'text', req, hint, full, opts, attrs = '', ph = '', add } = o;
   let ctl;
-  if (opts) ctl = `<select class="select" name="${name}" ${attrs}>${opts.map(x => { const [v, l] = Array.isArray(x) ? x : [x, x]; return opt(v, l, val); }).join('')}</select>`;
+  if (opts) ctl = `<select class="select" name="${name}" ${attrs} ${add && isAdmin() ? `data-add="${add}"` : ''}>${opts.map(x => { const [v, l] = Array.isArray(x) ? x : [x, x]; return opt(v, l, val); }).join('')}${add ? addOpt(add) : ''}</select>`;
   else if (type === 'textarea') ctl = `<textarea name="${name}" placeholder="${esc(ph)}" ${attrs}>${esc(val)}</textarea>`;
   else ctl = `<input class="input" type="${type}" name="${name}" value="${esc(val ?? '')}" placeholder="${esc(ph)}" ${attrs}>`;
   return `<div class="fld ${full ? 'full' : ''}" data-f="${name}"><label>${esc(label)}${req ? ' <i>*</i>' : ''}</label>${ctl}${hint ? `<div class="hint">${esc(hint)}</div>` : ''}</div>`;
@@ -1645,7 +1655,7 @@ function globalSearch(q) {
 function driverBasicForm(d) {
   modal({
     title: 'עדכון זמינות וטלפון', size: 'sm',
-    body: `<div class="form">${fld('זמינות', 'availability', d.availability, { opts: AVAIL, full: true })}${fld('טלפון', 'phone', d.phone, { type: 'tel', full: true })}</div>`,
+    body: `<div class="form">${fld('זמינות', 'availability', d.availability, { opts: avails(), full: true })}${fld('טלפון', 'phone', d.phone, { type: 'tel', full: true })}</div>`,
     onSubmit: fd => { const g = getter(fd); Store.put('drivers', { ...d, availability: g('availability'), phone: g('phone') }, `עודכנה זמינות: ${d.name}`); toast('עודכן'); },
   });
 }
@@ -1682,8 +1692,8 @@ function vehicleForm(v) {
     foot: !isNew ? `<button type="button" class="btn danger start" id="delVehicle">${ic('trash', 'sm')}מחיקה</button>` : '',
     body: `<div class="form">
       ${fld('מספר רכב', 'number', v.number, { req: true, attrs: isNew ? '' : 'disabled', hint: isNew ? '' : 'לא ניתן לשנות מספר רכב' })}
-      ${fld('סוג רכב', 'typeId', v.typeId, { req: true, opts: [['', 'בחר…'], ...typesSorted().map(t => [t.id, t.name])] })}
-      <div class="fld" data-f="unitId"><label>שיוך</label><select class="select" name="unitId">${unitOptsGrouped(v.unitId)}</select></div>
+      ${fld('סוג רכב', 'typeId', v.typeId, { req: true, opts: [['', 'בחר…'], ...typesSorted().map(t => [t.id, t.name])], add: 'type' })}
+      <div class="fld" data-f="unitId"><label>שיוך</label><select class="select" name="unitId" data-add="unit">${unitOptsGrouped(v.unitId)}${addOpt('unit')}</select></div>
       ${fld('מיקום', 'location', v.location, { ph: 'חניון גדודי' })}
       ${fld('ק״מ נוכחי', 'km', v.km, { type: 'number', attrs: 'min="0"' })}
       <div></div>
@@ -1824,7 +1834,7 @@ function userForm(u) {
       ${fld('כתובת Gmail', 'email', u?.id, { full: true, req: true, type: 'email', attrs: u ? 'disabled' : '', hint: 'החשבון שאיתו המשתמש ייכנס' })}
       ${fld('שם ותפקיד', 'name', u?.name, { full: true, ph: 'רס״ן ישראלי – סמג״ד' })}
       ${fld('הרשאה', 'role', u?.role || 'company', { full: true, opts: [['admin', 'קצין רכב – ניהול מלא'], ['company', 'מפקד סוללה – צפייה בנהגי הסוללה ועדכון זמינות'], ['hq', 'מפקדת גדוד – צפייה בלבד']] })}
-      ${fld('סוללה (למפקד סוללה)', 'unitId', u?.unitId, { full: true, opts: [['', '—'], ...unitsSorted().map(x => [x.id, x.name])] })}</div>`,
+      ${fld('סוללה (למפקד סוללה)', 'unitId', u?.unitId, { full: true, opts: [['', '—'], ...unitsSorted().map(x => [x.id, x.name])], add: 'unit' })}</div>`,
     onSubmit: (fd, form) => {
       const g = getter(fd); const email = (u ? u.id : g('email')).toLowerCase();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { fieldErr(form, 'email', 'כתובת לא תקינה'); return false; }
@@ -2187,11 +2197,11 @@ function driverForm(d) {
       <h4>פרטים אישיים</h4>
       ${fld('מספר אישי', 'pn', d.pn, { req: true, attrs: `inputmode="numeric" ${isNew ? '' : 'disabled'}`, hint: isNew ? '' : 'לא ניתן לשנות מספר אישי' })}
       ${fld('שם מלא', 'name', d.name, { req: true })}
-      ${fld('דרגה', 'rank', d.rank, { opts: [['', 'בחר…'], ...RANKS] })}
-      <div class="fld" data-f="unitId"><label>שיוך <i>*</i></label><select class="select" name="unitId">${unitOptsGrouped(d.unitId, { none: 'בחר סוללה / מחלקה…' })}</select><div class="hint">מחלקת רכב או אחת הסוללות</div></div>
+      ${fld('דרגה', 'rank', d.rank, { opts: [['', 'בחר…'], ...ranks()], add: 'rank' })}
+      <div class="fld" data-f="unitId"><label>שיוך <i>*</i></label><select class="select" name="unitId" data-add="unit">${unitOptsGrouped(d.unitId, { none: 'בחר סוללה / מחלקה…' })}${addOpt('unit')}</select><div class="hint">מחלקת רכב או אחת הסוללות</div></div>
       ${fld('טלפון', 'phone', d.phone, { type: 'tel', attrs: 'inputmode="tel"' })}
-      ${fld('סוג שירות', 'service', d.service, { opts: SERVICE })}
-      ${fld('זמינות', 'availability', d.availability, { opts: AVAIL })}
+      ${fld('סוג שירות', 'service', d.service, { opts: services(), add: 'service' })}
+      ${fld('זמינות', 'availability', d.availability, { opts: avails(), add: 'avail' })}
       ${photoField('face', 'תמונת נהג', { has: d.docs?.face ? photoId(d, 'face') : '', hint: 'תמונת פנים לזיהוי' })}
       <h4>רישיון נהיגה אזרחי</h4>
       ${fld('מספר רישיון', 'civilLicenseNo', d.civilLicenseNo, { attrs: 'inputmode="numeric"' })}
@@ -2252,7 +2262,7 @@ function refresherForm(d, presetType) {
     title: 'רישום רענון – ' + d.name, submit: 'שמירת רענון',
     body: `<div class="form">
       <div class="fld full" data-f="types"><label>על אילו רכבים בוצע הרענון <i>*</i></label>
-        <div class="tgrid">${types.map(t => `<label class="tchk ${gradeOk(d, t) ? '' : 'warnc'}"><input type="checkbox" name="t_${t.id}" ${pre.includes(t.id) ? 'checked' : ''}><span>${esc(t.name)}</span>${!gradeOk(d, t) ? `<small>דורש ${esc(t.grade)}</small>` : ''}</label>`).join('')}</div></div>
+        <div class="tgrid">${types.map(t => `<label class="tchk ${gradeOk(d, t) ? '' : 'warnc'}"><input type="checkbox" name="t_${t.id}" ${pre.includes(t.id) ? 'checked' : ''}><span>${esc(t.name)}</span>${!gradeOk(d, t) ? `<small>דורש ${esc(t.grade)}</small>` : ''}</label>`).join('')}${typeAddChip()}</div></div>
       ${fld('תאריך הרענון', 'date', todayISO(), { type: 'date', req: true })}
       <div class="fld" data-f="mentor"><label>נהג חונך שביצע <i>*</i></label><select class="select" name="mentor"></select><div class="hint" id="mhint"></div></div>
       <div class="fld full" data-f="mentorFree" id="mfree" hidden><label>שם החונך <i>*</i></label><input class="input" name="mentorFree" placeholder="שם מלא ומספר אישי"></div>
@@ -2261,7 +2271,7 @@ function refresherForm(d, presetType) {
     onMount: form => {
       bindPhotoFields(form, pending);
       const sel = form.querySelector('[name=mentor]'), hint = form.querySelector('#mhint'), free = form.querySelector('#mfree');
-      const chosen = () => types.filter(t => form.querySelector(`[name=t_${t.id}]`).checked).map(t => t.id);
+      const chosen = () => typesSorted().filter(t => form.querySelector(`[name="t_${t.id}"]`)?.checked).map(t => t.id);
       const fill = () => {
         const ids = chosen(), cur = sel.value;
         const ok = ids.length ? mentorsFor(ids, d.id) : allMentors(d.id);
@@ -2270,13 +2280,13 @@ function refresherForm(d, presetType) {
         hint.textContent = !allMentors(d.id).length ? 'עדיין לא הוגדרו נהגים חונכים – אפשר להגדיר מכרטיס הנהג' : ids.length && !ok.length ? 'אין חונך שמוגדר על כל הרכבים שסומנו' : '';
         free.hidden = sel.value !== '__free';
       };
-      form.querySelectorAll('.tchk input').forEach(c => c.onchange = fill);
+      form.addEventListener('change', e => { if (e.target.closest('.tchk')) fill(); });
       sel.onchange = () => { free.hidden = sel.value !== '__free'; };
       fill();
     },
     onSubmit: (fd, form) => {
       const g = getter(fd);
-      const ids = types.filter(t => fd.get('t_' + t.id)).map(t => t.id);
+      const ids = typesSorted().filter(t => fd.get('t_' + t.id)).map(t => t.id);
       let bad = false;
       if (!ids.length) { fieldErr(form, 'types', 'יש לסמן לפחות רכב אחד'); bad = true; }
       if (!g('date')) { fieldErr(form, 'date', 'שדה חובה'); bad = true; }
@@ -2308,7 +2318,7 @@ function ngrForm(d) {
       ${fld('תאריך חתימה', 'date', todayISO(), { type: 'date', req: true })}
       ${fld('חתם', 'signer', S.settings.ngrSigner || 'סמג״ד', { req: true, hint: 'הקצין שחתם (קצין בב״ד)' })}
       <div class="fld full" data-f="types"><label>רכבים שמופיעים בנגררת <i>*</i></label>
-        <div class="tgrid">${types.map(t => { const r = recent(t.id); return `<label class="tchk ${!gradeOk(d, t) ? 'warnc' : ''}"><input type="checkbox" name="t_${t.id}" ${pre.has(t.id) ? 'checked' : ''}><span>${esc(t.name)}</span><small class="${r ? '' : 't-warn'}">${!gradeOk(d, t) ? 'דורש ' + esc(t.grade) : r ? 'רענון ' + fmtDate(r.date) : 'אין רענון בשנה האחרונה'}</small></label>`; }).join('')}</div></div>
+        <div class="tgrid">${types.map(t => { const r = recent(t.id); return `<label class="tchk ${!gradeOk(d, t) ? 'warnc' : ''}"><input type="checkbox" name="t_${t.id}" ${pre.has(t.id) ? 'checked' : ''}><span>${esc(t.name)}</span><small class="${r ? '' : 't-warn'}">${!gradeOk(d, t) ? 'דורש ' + esc(t.grade) : r ? 'רענון ' + fmtDate(r.date) : 'אין רענון בשנה האחרונה'}</small></label>`; }).join('')}${typeAddChip()}</div></div>
       ${photoField('ngr', 'צילום הנגררת החתומה', { full: true, req: true, hint: 'צלם את הטופס החתום בעט' })}
       <div class="full t-muted" id="ngrExp" style="font-size:13px"></div>
     </div>`,
@@ -2320,7 +2330,7 @@ function ngrForm(d) {
     },
     onSubmit: (fd, form) => {
       const g = getter(fd);
-      const ids = types.filter(t => fd.get('t_' + t.id)).map(t => t.id);
+      const ids = typesSorted().filter(t => fd.get('t_' + t.id)).map(t => t.id);
       let bad = false;
       if (!g('date')) { fieldErr(form, 'date', 'שדה חובה'); bad = true; }
       if (!g('signer')) { fieldErr(form, 'signer', 'שדה חובה'); bad = true; }
@@ -2352,9 +2362,9 @@ function mentorForm(d) {
   modal({
     title: 'נהג חונך – ' + d.name, size: 'sm', submit: 'שמירה',
     body: `<p class="t-muted" style="margin:0 0 12px;font-size:13.5px">נהג חונך מבצע רענונים לנהגים אחרים. סמן את הרכבים שהוא הוסמך לחנוך עליהם. ללא סימון = לא חונך.</p>
-      <div class="tgrid" data-f="types">${types.map(t => `<label class="tchk"><input type="checkbox" name="t_${t.id}" ${cur.has(t.id) ? 'checked' : ''}><span>${esc(t.name)}</span>${qualified(d, t.id) ? '' : '<small class="t-warn">לא כשיר עליו כרגע</small>'}</label>`).join('')}</div>`,
+      <div class="tgrid" data-f="types">${types.map(t => `<label class="tchk"><input type="checkbox" name="t_${t.id}" ${cur.has(t.id) ? 'checked' : ''}><span>${esc(t.name)}</span>${qualified(d, t.id) ? '' : '<small class="t-warn">לא כשיר עליו כרגע</small>'}</label>`).join('')}${typeAddChip()}</div>`,
     onSubmit: fd => {
-      const ids = types.filter(t => fd.get('t_' + t.id)).map(t => t.id);
+      const ids = typesSorted().filter(t => fd.get('t_' + t.id)).map(t => t.id);
       Store.put('drivers', { ...d, mentor: { typeIds: ids } }, ids.length ? `הוגדר נהג חונך: ${d.name} – ${ids.map(typeName).join(', ')}` : `בוטל נהג חונך: ${d.name}`);
       toast(ids.length ? 'הנהג הוגדר כחונך' : 'הנהג כבר לא חונך');
     },
@@ -2498,7 +2508,7 @@ function taskForm(t, preset = {}) {
     body: `<div class="form">
       ${fld('מה צריך לעשות', 'title', t.title, { full: true, req: true, ph: 'למשל: להחתים נגררות לנהגי סוללה א׳' })}
       ${fld('פירוט', 'desc', t.desc, { type: 'textarea', full: true })}
-      ${fld('אחראי לביצוע', 'assigneeId', t.assigneeId, { req: true, opts: people.map(p => [p.id, p.name + (p.sub ? ' · ' + p.sub : '')]) })}
+      ${fld('אחראי לביצוע', 'assigneeId', t.assigneeId, { req: true, opts: people.map(p => [p.id, p.name + (p.sub ? ' · ' + p.sub : '')]), add: 'user' })}
       ${fld('תאריך יעד', 'due', t.due || '', { type: 'date', req: true })}
       ${fld('שעה (לא חובה)', 'time', t.time || '', { type: 'time', hint: 'לסידור בשבצ״ק' })}
       ${!isNew ? fld('סטטוס', 'status', t.status, { opts: TASK_ST }) : ''}
@@ -2516,7 +2526,7 @@ function taskForm(t, preset = {}) {
       if (!g('title')) { fieldErr(form, 'title', 'שדה חובה'); bad = true; }
       if (!g('due')) { fieldErr(form, 'due', 'יש לבחור תאריך יעד'); bad = true; }
       if (bad) return false;
-      const p = people.find(x => x.id === g('assigneeId'));
+      const p = taskPeople().find(x => x.id === g('assigneeId'));
       const d = Store.get('drivers', g('driverId')), v = Store.get('vehicles', g('vehicleId'));
       const now = new Date().toISOString();
       const st = isNew ? 'פתוחה' : g('status');
@@ -2626,12 +2636,12 @@ function rpDoh1(scope) {
   const inScope = d => scope === 'all' ? true : (u => !!u && unitKind(u) === 'platoon')(S.data.units.find(u => u.id === d.unitId));
   const D = scoped(S.data.drivers).filter(inScope);
   const av = d => d.availability || 'ביחידה';
-  const counts = AVAIL.map(a => [a, D.filter(d => av(d) === a).length]).filter(([, n]) => n);
+  const counts = avails().map(a => [a, D.filter(d => av(d) === a).length]).filter(([, n]) => n);
   const here = D.filter(d => av(d) === 'ביחידה');
   const fitHere = here.filter(driverUsable).length;
   const units = scope === 'all' ? unitsSorted().concat(D.some(d => !d.unitId) ? [{ id: '', name: 'ללא שיוך' }] : []) : unitsSorted().filter(u => unitKind(u) === 'platoon');
   const block = u => {
-    const xs = D.filter(d => (d.unitId || '') === u.id).sort((a, b) => AVAIL.indexOf(av(a)) - AVAIL.indexOf(av(b)) || byName(a, b));
+    const xs = D.filter(d => (d.unitId || '') === u.id).sort((a, b) => avails().indexOf(av(a)) - avails().indexOf(av(b)) || byName(a, b));
     if (!xs.length) return '';
     return `<h3>${esc(u.name)} <small>${xs.filter(d => av(d) === 'ביחידה').length} ביחידה מתוך ${xs.length}</small></h3>
       <table class="rt"><thead><tr><th class="c" style="width:24px">#</th><th>שם</th><th class="c" style="width:62px">מ״א</th><th style="width:52px">דרגה</th><th class="c" style="width:82px">טלפון</th><th class="c" style="width:58px">מצב</th><th class="c" style="width:88px">כשירות</th><th style="width:104px">מוסמך על</th></tr></thead><tbody>
@@ -2720,6 +2730,128 @@ function printReport(o) {
   setTimeout(() => { try { window.print(); } catch (e) { done(); } }, 120);
 }
 ACT.report = () => reportDialog();
+
+/* =========================================================
+   רשימות שאפשר להוסיף להן ערך ישירות מהטופס
+   בכל רשימה נפתחת (לקצין רכב) יש "+ הוספה…" – נפתחת שורה קטנה
+   מתחת לרשימה, ממלאים ושומרים, והערך החדש נבחר מיד.
+   סוגי רכב / סוללות / משתמשים נשמרים כרשומות; דרגות, סוגי שירות
+   וזמינות נשמרים בהגדרות (settings.lists).
+   ========================================================= */
+const ADD_V = '__add';
+const addOpt = kind => isAdmin() ? `<option value="${ADD_V}" data-addopt>+ הוספה…</option>` : '';
+const customList = k => (S.settings.lists && S.settings.lists[k]) || [];
+const ranks = () => [...RANKS, ...customList('rank').filter(x => !RANKS.includes(x))];
+const services = () => [...SERVICE, ...customList('service').filter(x => !SERVICE.includes(x))];
+const avails = () => [...AVAIL, ...customList('avail').filter(x => !AVAIL.includes(x))];
+
+const ADDERS = {
+  type: {
+    title: 'סוג רכב חדש',
+    body: () => `<input class="input" name="_n" placeholder="שם סוג הרכב, למשל: זאב">
+      <select class="select" name="_g">${opt('', 'רישיון נדרש: ללא בדיקה', '')}${GRADES.map(g => opt(g, 'רישיון ' + g, '')).join('')}</select>`,
+    save: (g, err) => {
+      const name = g('_n'); if (!name) return err('יש להזין שם');
+      if (S.data.types.some(t => norm(t.name) === norm(name))) return err('כבר קיים סוג רכב בשם הזה');
+      const t = Store.put('types', { id: 't' + uid(), name, grade: g('_g'), serviceDays: 180, serviceKm: 5000 }, `נוסף סוג רכב: ${name}`);
+      return { value: t.id, label: name };
+    },
+  },
+  unit: {
+    title: 'סוללה / מחלקה חדשה',
+    body: () => `<input class="input" name="_n" placeholder="שם, למשל: סוללה ד׳">
+      <select class="select" name="_k">${opt('battery', 'סוללה', 'battery')}${opt('platoon', 'מחלקת רכב', '')}</select>`,
+    save: (g, err) => {
+      const name = g('_n'); if (!name) return err('יש להזין שם');
+      if (S.data.units.some(u => u.name === name)) return err('כבר קיים שם כזה');
+      const u = Store.put('units', { id: 'u' + uid(), name, kind: g('_k') || 'battery', order: S.data.units.length + 1 }, `נוספה ${UNIT_KIND[g('_k')] || 'סוללה'}: ${name}`);
+      return { value: u.id, label: name };
+    },
+  },
+  rank: { title: 'דרגה חדשה', list: 'rank', ph: 'למשל: רנ״ג' },
+  service: { title: 'סוג שירות חדש', list: 'service', ph: 'למשל: שירות לאומי' },
+  avail: { title: 'מצב זמינות חדש', list: 'avail', ph: 'למשל: בהשתלמות' },
+  user: {
+    title: 'משתמש חדש',
+    body: () => `<input class="input" name="_n" placeholder="שם ותפקיד">
+      <input class="input" name="_e" type="email" dir="ltr" placeholder="כתובת Gmail">
+      <select class="select" name="_r">${opt('company', 'מפקד סוללה', 'company')}${opt('hq', 'מפקדת גדוד – צפייה', '')}${opt('admin', 'קצין רכב – ניהול מלא', '')}</select>
+      <select class="select" name="_u">${opt('', 'סוללה…', '')}${unitsSorted().map(u => opt(u.id, u.name, '')).join('')}</select>`,
+    save: (g, err) => {
+      const email = g('_e').toLowerCase(), role = g('_r');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err('כתובת מייל לא תקינה');
+      if (S.data.users.some(u => u.id === email)) return err('המשתמש כבר קיים');
+      if (role === 'company' && !g('_u')) return err('יש לבחור סוללה למפקד סוללה');
+      const name = g('_n') || email;
+      Store.put('users', { id: email, name, role, unitId: role === 'company' ? g('_u') : '' }, `נוסף משתמש: ${email} (${ROLE_LABEL[role]})`);
+      return { value: email, label: name + ' · ' + ROLE_LABEL[role] };
+    },
+  },
+};
+/* ערך בהגדרות (דרגה / שירות / זמינות) */
+function saveListValue(key, g, err) {
+  const v = g('_n'); if (!v) return err('יש להזין ערך');
+  const all = { rank: ranks, service: services, avail: avails }[key]();
+  if (all.includes(v)) return { value: v, label: v };
+  const lists = { ...(S.settings.lists || {}) }; lists[key] = [...(lists[key] || []), v];
+  Store.saveSettings({ ...S.settings, lists });
+  return { value: v, label: v };
+}
+
+function openAddBox(anchor, kind, onDone) {
+  const A = ADDERS[kind]; if (!A) return;
+  anchor.parentElement.querySelector('.addbox')?.remove();
+  const box = document.createElement('div');
+  box.className = 'addbox';
+  box.innerHTML = `<div class="ab-t">${ic('plus', 'sm')}${esc(A.title)}</div>
+    <div class="ab-f">${A.body ? A.body() : `<input class="input" name="_n" placeholder="${esc(A.ph || '')}">`}</div>
+    <div class="ab-e"></div>
+    <div class="ab-b"><button type="button" class="btn sm primary" data-ab="ok">${ic('check', 'sm')}הוספה</button><button type="button" class="btn sm" data-ab="no">ביטול</button></div>`;
+  anchor.insertAdjacentElement('afterend', box);
+  const roleSel = box.querySelector('[name=_r]'), unitSel = box.querySelector('[name=_u]');
+  if (roleSel && unitSel) { const f = () => { unitSel.hidden = roleSel.value !== 'company'; }; roleSel.onchange = f; f(); }
+  const first = box.querySelector('input'); setTimeout(() => first?.focus(), 30);
+  const close = () => box.remove();
+  const ok = () => {
+    const g = k => (box.querySelector(`[name="${k}"]`)?.value || '').trim();
+    let msg = '';
+    const err = m => { msg = m; return null; };
+    const r = A.list ? saveListValue(A.list, g, err) : A.save(g, err);
+    if (!r) { box.querySelector('.ab-e').textContent = msg; return; }
+    close(); onDone(r); toast('נוסף: ' + r.label.split(' · ')[0]);
+  };
+  box.querySelector('[data-ab=ok]').onclick = ok;
+  box.querySelector('[data-ab=no]').onclick = close;
+  box.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ok(); } if (e.key === 'Escape') { e.stopPropagation(); close(); } });
+}
+
+/* select עם data-add: בחירה ב"+ הוספה…" פותחת את שורת ההוספה */
+document.addEventListener('focusin', e => { const s = e.target; if (s.tagName === 'SELECT' && s.dataset.add && s.value !== ADD_V) s.dataset.prev = s.value; });
+document.addEventListener('change', e => {
+  const s = e.target;
+  if (s.tagName !== 'SELECT' || !s.dataset.add || s.value !== ADD_V) return;
+  e.stopImmediatePropagation();
+  s.value = s.dataset.prev || '';
+  openAddBox(s, s.dataset.add, r => {
+    const o = document.createElement('option'); o.value = r.value; o.textContent = r.label;
+    const addO = s.querySelector('[data-addopt]');
+    const grp = s.querySelector('optgroup:last-of-type');
+    if (s.dataset.add === 'unit' && grp) grp.appendChild(o); else s.insertBefore(o, addO);
+    s.value = r.value; s.dataset.prev = r.value;
+    s.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}, true);
+
+/* רשת תיבות סימון של סוגי רכב: כפתור "+ סוג רכב" בסוף */
+const typeAddChip = () => isAdmin() ? `<button type="button" class="tchk addchip" data-addtype>${ic('plus', 'sm')}<span>סוג רכב חדש</span></button>` : '';
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-addtype]'); if (!b) return;
+  openAddBox(b.closest('.tgrid'), 'type', r => {
+    const l = document.createElement('label'); l.className = 'tchk';
+    l.innerHTML = `<input type="checkbox" name="t_${esc(r.value)}" checked><span>${esc(r.label)}</span><small class="t-muted">חדש</small>`;
+    b.before(l); l.querySelector('input').dispatchEvent(new Event('change', { bubbles: true }));
+  });
+});
 
 /* =========================================================
    Excel import / export, backup / restore
